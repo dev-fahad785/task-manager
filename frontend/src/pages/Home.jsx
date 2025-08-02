@@ -400,11 +400,10 @@ const Home = () => {
                 {
                   title: 'Enterprise',
                   description: 'Built for busy teams and power users',
-                  price: '$15',
+                  price: '$5',
                   features: [
                     'Unlimited AI prioritization & alerts',
-                    'Add tasks directly via WhatsApp',
-                    'Advanced productivity insights',
+                    'Weekly and Monthly productivity insights',
                     'Prioritization by AI as per your requirements',
                     'Advance reports about your productivity',
                   ],
