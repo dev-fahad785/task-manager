@@ -379,7 +379,7 @@ const Home = () => {
                   description: 'Perfect for getting started',
                   price: '$0',
                   features: [
-                    'Task reminders every 3-4 hours',
+                    'Task reminders every 3 hours',
                     'Unlimited task',
                     '5 smart prioritizations/day',
                   ],
