@@ -381,14 +381,14 @@ const Home = () => {
                   features: [
                     'Task reminders every 3 hours',
                     'Unlimited task',
-                    '5 smart prioritizations/day',
+                    '5 smart AI prioritizations/day',
                   ],
                   paymentLink: '/signup'
                 },
                 {
                   title: 'Professional',
                   description: 'Power-up your productivity',
-                  price: '$5',
+                  price: '$2',
                   features: [
                     'Prioritize 50+ tasks with AI',
                     'Customize your reminder times',
