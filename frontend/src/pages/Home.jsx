@@ -334,7 +334,15 @@ const Home = () => {
               quote: "Task AI has this magical way of knowing just when to remind me. I feel more in control, and way less stressed.",
               bgColor: "bg-yellow-100",
               textColor: "text-pink-600"
-            }
+            },
+            {
+              initials: "SM",
+              name: "Smith",
+              role: "Software Engineer",
+              quote: "Task AI has transformed how I manage my tasks. The WhatsApp reminders are a game-changer, keeping me on track without overwhelming me.",
+              bgColor: "bg-purple-100",
+              textColor: "text-pink-600"
+            },
           ].map((testimonial, index) => (
             <div key={testimonial.name} className="bg-white p-8  border-1 rounded-xl shadow-lg">
               <div className="flex items-center mb-4">
