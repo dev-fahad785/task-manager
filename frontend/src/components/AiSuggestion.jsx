@@ -1,11 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { Loader2 } from 'lucide-react'; // optional icon lib
 const AiSuggestion = () => {
     const user = JSON.parse(localStorage.getItem("user")) || null;
     const userID = user.id;
 
-    const [arrangedTask, setArrangedTask] = useState([]);
     const [triesLeft, setTriesLeft] = useState(null);
 
     const [showAiSuggestion, setShowAiSuggestion] = useState(false);
@@ -15,12 +14,64 @@ const AiSuggestion = () => {
     const [errorMsg, setErrorMsg] = useState("");
     const [successMsg, setSuccessMsg] = useState("");
     const [remainingTries, setRemainingTries] = useState(null); // ✅
+    const [todayTasks, setTodayTasks] = useState([]);
+    const [hasTodayTasks, setHasTodayTasks] = useState(false);
 
     const toggleCloseAiSuggestion = () => {
         setShowAiSuggestion(prev => !prev);
     };
 
+    // Function to check if user has tasks for today
+    const checkTodayTasks = useCallback(async () => {
+        try {
+            const token = localStorage.getItem("token");
+            const response = await axios.get(
+                `${import.meta.env.VITE_BACKEND_URL}/task/getAllTasks/${userID}`,
+                {
+                    withCredentials: true,
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
+
+            const tasks = response.data.tasks || [];
+            
+            // Filter tasks for today with pending status
+            const today = new Date();
+            const getDateOnly = (date) => 
+                new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
+            
+            const todaysPendingTasks = tasks.filter(task => {
+                const taskDate = new Date(task.dueDate);
+                const taskDay = getDateOnly(taskDate);
+                const todayDay = getDateOnly(today);
+                return task.completionStatus === "Pending" && taskDay === todayDay;
+            });
+
+            setTodayTasks(todaysPendingTasks);
+            setHasTodayTasks(todaysPendingTasks.length > 0);
+        } catch (error) {
+            console.error("Error fetching today's tasks:", error);
+            setHasTodayTasks(false);
+        }
+    }, [userID]);
+
+    // Check for today's tasks when component mounts
+    useEffect(() => {
+        if (userID) {
+            checkTodayTasks();
+        }
+    }, [userID, checkTodayTasks]);
+
     const arrangeTasksByAi = async () => {
+        // Check if user has tasks for today before proceeding
+        if (!hasTodayTasks) {
+            setErrorMsg("❌ No tasks available for today. Please add some tasks first!");
+            setTimeout(() => setErrorMsg(""), 4000);
+            return;
+        }
+
         setStatus("loading");
         setErrorMsg("");
         setSuccessMsg("");
@@ -33,20 +84,22 @@ const AiSuggestion = () => {
 
             // Save and update UI
             localStorage.setItem('arrangedByAi', JSON.stringify(message));
-            setArrangedTask(message);
             setTriesLeft(remainingTries);
 
             setStatus("success");
             setShowAiSuggestion(true);
             setSuccessMsg("✅ Tasks arranged successfully!");
             setTimeout(() => setSuccessMsg(""), 3000);
+            
+            // Refresh today's tasks after successful arrangement
+            checkTodayTasks();
         } catch (error) {
             console.error("AI Suggestion Error:", error);
 
             if (error.response?.status === 429) {
                 const tries = error.response?.data?.remainingTries ?? 0;
                 setRemainingTries(tries);
-                setErrorMsg("❌ You’ve utilized all your credits. Please try again after 24 hours.");
+                setErrorMsg("❌ You've utilized all your credits. Please try again after 24 hours.");
             } else {
                 setErrorMsg("❌ Failed to fetch AI suggestions. Please try again.");
             }
@@ -104,6 +157,13 @@ const AiSuggestion = () => {
                         </div>
                     )}
 
+                    {/* No Tasks Warning */}
+                    {!hasTodayTasks && (
+                        <div className="text-sm text-amber-700 bg-amber-100 border border-amber-300 p-2 rounded-md">
+                            ⚠️ No tasks scheduled for today. Add some tasks first to use AI suggestions!
+                        </div>
+                    )}
+
                     {/* Task Cards */}
                     {showAiSuggestion && aiTaskFromLS.length > 0 && (
                         <div className="space-y-4">
@@ -123,8 +183,13 @@ const AiSuggestion = () => {
                     <div className="mt-4 flex flex-col items-center gap-2">
                         <button
                             onClick={arrangeTasksByAi}
-                            disabled={status === "loading"}
-                            className="flex items-center justify-center gap-2 w-full px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 disabled:opacity-60 transition-all"
+                            disabled={status === "loading" || !hasTodayTasks}
+                            className={`flex items-center justify-center gap-2 w-full px-4 py-2 text-sm rounded-lg transition-all ${
+                                !hasTodayTasks 
+                                    ? "bg-gray-300 text-gray-500 cursor-not-allowed" 
+                                    : "bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-60"
+                            }`}
+                            title={!hasTodayTasks ? "Add tasks for today to use AI suggestions" : ""}
                         >
                             {status === "loading" && <Loader2 className="animate-spin h-5 w-5" />}
                             {status === "loading" ? "Fetching..." : "Arrange Tasks"}
