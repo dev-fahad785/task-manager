@@ -6,7 +6,7 @@ import qrcode from 'qrcode-terminal';
 import User from './models/user.model.js';
 import { addWhatsappSubscriber, removeWhatsappSubscriber } from './controllers/user.controller.js';
 import { getTodaysTasks, getTomrrowsTasks, getUpcomingTasks, getAllTasks, sendReminderForAllUsers, productivityReport } from './whatsappBot/whatsappBot.controller.js';
-
+import {runWitTest}from './wit.js'
 // Store registered users and their attempt counts
 const registeredUsers = new Set();
 const userAttempts = new Map(); // Track failed attempts per user
@@ -486,29 +486,35 @@ www.taskai.studio
 📌 Type *0* for main menu`;
         break;
 
-      case '7':
-        responseMessage = `🆘 *Technical Support*
+case '7':
+  try {
+    // Call the Wit AI test function with a sample message
+    const witres = await runWitTest("urgent text sir bilal for task assignment till 5pm today");
+    console.log(witres);
+    responseMessage = `🤖 *AI Task Parser*
 
 Hello ${userName}! 👋
 
-*🔧 Quick Solutions:*
-• 🔄 Try typing *menu* to refresh
-• 📱 Check your WhatsApp connection
-• ⏰ Wait a moment and try again
-
-*💬 Need More Help?*
-📧 Email: taskai.studio@gmail.com
-🌐 Web: www.taskai.studio
-📱 WhatsApp: Available 24/7
-
-*📋 When contacting support, please include:*
-• Your issue description
-• What you were trying to do
-• Any error messages
+*Test Result:*
+• 🎯 Intent: ${witres.intent || 'Not detected'}
+• 📅 Date/Time: ${witres.datetime || 'Not specified'}
+• ⭐ Priority: ${witres.priority || 'Not specified'}
 
 📌 Type *0* for main menu`;
-        break;
+  } catch (error) {
+    console.error('Error with Wit AI test:', error);
+    responseMessage = `❌ *AI Parser Error*
 
+Unable to process AI task parsing right now.
+
+*Try:*
+• Wait a moment and try again
+• Contact support
+• Visit www.taskai.studio directly
+
+📌 Type *0* for main menu`;
+  }
+  break;
       case '8':
         responseMessage = `💬 *We Value Your Feedback!*
 
