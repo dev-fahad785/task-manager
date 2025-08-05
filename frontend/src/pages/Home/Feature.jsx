@@ -6,8 +6,10 @@ const Feature = () => {
               {/* Features */}
               <section id="features" className="container mx-auto px-6 py-20 animate-on-scroll">
                 <div className="text-center mb-16">
-                  <h2 className={`text-3xl font-bold text-gray-800 transition-all duration-700 ${animatedElements['features'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>Smarter Task Management with Built-in AI</h2>
-                  <p className={`mt-4 text-xl text-gray-600 max-w-2xl mx-auto transition-all duration-700 ${animatedElements['features'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`} style={{ transitionDelay: '100ms' }}>
+                  <h2 className="text-3xl font-bold text-gray-800 transition-all duration-700 opacity-100 translate-y-0">
+                    Smarter Task Management with Built-in AI
+                  </h2>
+                  <p className="mt-4 text-xl text-gray-600 max-w-2xl mx-auto transition-all duration-700 opacity-100 translate-y-0" style={{ transitionDelay: '100ms' }}>
                     Task AI doesn’t just organize your day — it understands your habits, deadlines, and mental flow to keep you focused.
                   </p>
                 </div>
@@ -32,7 +34,7 @@ const Feature = () => {
                   ].map((feature, index) => (
                     <div
                       key={feature.title}
-                      className={`bg-white p-8 border-1 text-center rounded-xl shadow-lg transition-all duration-700 hover:shadow-xl hover:-translate-y-2 ${animatedElements['features'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+                      className="bg-white p-8 border-1 text-center rounded-xl shadow-lg transition-all duration-700 hover:shadow-xl hover:-translate-y-2 opacity-100 translate-y-0"
                       style={{ transitionDelay: `${index * 150 + 200}ms` }}
                     >
                       <div className="w-16 h-16 bg-indigo-100 rounded-lg flex items-center justify-center mb-6 mx-auto">

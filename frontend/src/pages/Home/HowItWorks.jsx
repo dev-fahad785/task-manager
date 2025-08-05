@@ -1,5 +1,5 @@
 import React from 'react'
-
+import { Link } from 'react-router-dom'
 const HowItWorks = () => {
     
   return (
@@ -9,8 +9,8 @@ const HowItWorks = () => {
       <section id="how-it-works" className="bg-gray-50 py-20 animate-on-scroll">
         <div className="container mx-auto px-6">
           <div className="text-center mb-16">
-            <h2 className={`text-3xl font-bold text-gray-800 transition-all duration-700 ${animatedElements['how-it-works'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>How Task AI Works (Spoiler: It’s Really Smart)</h2>
-            <p className={`mt-4 text-xl text-gray-600 max-w-2xl mx-auto transition-all duration-700 ${animatedElements['how-it-works'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`} style={{ transitionDelay: '100ms' }}>
+            <h2 className={`text-3xl font-bold text-gray-800 transition-all duration-700 `}>How Task AI Works (Spoiler: It’s Really Smart)</h2>
+            <p className={`mt-4 text-xl text-gray-600 max-w-2xl mx-auto transition-all duration-700 `} style={{ transitionDelay: '100ms' }}>
 
               No complicated setup. Just enter tasks and let the AI do the rest.
             </p>
@@ -45,7 +45,7 @@ const HowItWorks = () => {
             ))}
           </div>
 
-          <div className={`mt-12 flex justify-center transition-all duration-1000 ${animatedElements['how-it-works'] ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`} style={{ transitionDelay: '800ms' }}>
+          <div className='mt-12 flex justify-center transition-all duration-1000' >
             <div className="h-1 bg-indigo-200 w-3/4 relative">
               {[25, 50, 75].map((pos) => (
                 <div key={pos} className="absolute top-1/2 -translate-y-1/2" style={{ left: `${pos}%` }}>

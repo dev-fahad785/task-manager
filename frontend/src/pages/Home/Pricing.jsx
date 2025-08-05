@@ -7,8 +7,8 @@ const Pricing = () => {
       <section id="pricing" className="bg-gray-50 py-20 animate-on-scroll">
         <div className="container mx-auto px-6">
           <div className="text-center mb-16">
-            <h2 className={`text-3xl font-bold text-gray-800 transition-all duration-700 ${animatedElements['pricing'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>Simple Pricing That Scales With You</h2>
-            <p className={`mt-4 text-xl text-gray-600 max-w-2xl mx-auto transition-all duration-700 ${animatedElements['pricing'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`} style={{ transitionDelay: '100ms' }}>
+            <h2 className={`text-3xl font-bold text-gray-800 transition-all duration-700 opacity-100 translate-y-0 `}>Simple Pricing That Scales With You</h2>
+            <p className={`mt-4 text-xl text-gray-600 max-w-2xl mx-auto transition-all duration-700 opacity-100 translate-y-0' `} style={{ transitionDelay: '100ms' }}>
               Start free. Upgrade only when your needs grow.
             </p>
           </div>
@@ -55,18 +55,15 @@ const Pricing = () => {
               ].map((plan, index) => (
                 <div
                   key={plan.title}
-                  className={`bg-gray-600 p-8 rounded-xl shadow-lg transition-all duration-700 hover:shadow-2xl hover:-translate-y-2 ${animatedElements['pricing']
-                    ? 'opacity-100 translate-y-0'
-                    : 'opacity-0 translate-y-8'
-                    }`}
+                  className={`bg-gray-600 p-8 rounded-xl shadow-lg transition-all duration-700 hover:shadow-2xl hover:-translate-y-2 
+                    opacity-100 translate-y-0`}
                 >
                   <h3 className="text-2xl font-semibold text-white mb-2">
                     {plan.title}
                   </h3>
                   <p className="text-gray-300 mb-4">{plan.description}</p>
                   <div
-                    className={`flex items-center justify-center bg-indigo-500 text-white font-bold rounded-lg h-12 w-24 mb-4 text-lg transition-all duration-500 ${animatedElements['pricing'] ? 'scale-100' : 'scale-0'
-                      }`}
+                    className={`flex items-center justify-center bg-indigo-500 text-white font-bold rounded-lg h-12 w-24 mb-4 text-lg transition-all duration-500`}
                     style={{ transitionDelay: '300ms' }}
                   >
                     {plan.price}
@@ -76,10 +73,7 @@ const Pricing = () => {
                     {plan.features.map((feature, i) => (
                       <li
                         key={feature}
-                        className={`flex items-center gap-2 mb-2 transition-all duration-500 ${animatedElements['pricing']
-                          ? 'opacity-100 translate-x-0'
-                          : 'opacity-0 -translate-x-4'
-                          }`}
+                        className={`flex items-center gap-2 mb-2 transition-all duration-500 opacity-100 translate-x-0`}
                         style={{ transitionDelay: `${i * 100 + 400}ms` }}
                       >
                         <svg
@@ -100,10 +94,7 @@ const Pricing = () => {
                   <a
                     href={plan.paymentLink}
                     target="_blank"
-                    className={`block bg-indigo-500 text-white rounded-lg font-semibold text-center py-3 hover:bg-indigo-600 transition mt-6 ${animatedElements['pricing']
-                      ? 'opacity-100 translate-y-0 hover:scale-105'
-                      : 'opacity-0 translate-y-4'
-                      }`}
+                    className={`block bg-indigo-500 text-white rounded-lg font-semibold text-center py-3 hover:bg-indigo-600 transition mt-6 'opacity-100 translate-y-0 hover:scale-105`}
                     style={{ transitionDelay: '700ms' }}
                   >
                     Get Started
