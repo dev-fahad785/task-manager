@@ -6,7 +6,7 @@ import axios from "axios";
 
 const WIT_TOKEN = "Bearer 72HIVMNTYWLQBNYTKOULYUBXDKTGUIOX"; // replace with your actual token
 
-const testMessage = "I have a meeting at 4pm tomorrow, medium priority";
+const testMessage = "";
 
 export const runWitTest = async (message) => {
   try {
@@ -43,4 +43,4 @@ export const runWitTest = async (message) => {
   }
 };
 
-runWitTest(testMessage);
+// runWitTest(testMessage);
