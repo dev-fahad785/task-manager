@@ -2,158 +2,205 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
 const Navbar = () => {
-  const [isVisible, setIsVisible] = useState(true);
   const [scrollY, setScrollY] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrollY(window.scrollY);
-      setIsVisible(window.scrollY > 10);
+      const currentScrollY = window.scrollY;
+      setScrollY(currentScrollY);
+      setIsScrolled(currentScrollY > 50);
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
   return (
     <div>
       <nav
-        className={`container mx-auto px-6 py-4 transition-all duration-500 ${
-          scrollY > 50
-            ? "bg-white shadow-md fixed top-0 left-0 right-0 z-50"
-            : ""
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+          isScrolled
+            ? "bg-gray-900/95 backdrop-blur-lg border-b border-cyan-500/20 shadow-lg shadow-cyan-500/10"
+            : "bg-transparent"
         }`}
       >
-        <div className="flex justify-between items-center">
-          <div className="flex items-center">
-            <svg
-              className={`h-8 w-8 text-indigo-600 transition-transform duration-700 ${
-                isVisible ? "rotate-0" : "-rotate-180"
-              }`}
-              viewBox="0 0 24 24"
-              fill="none"
-            >
-              <path
-                d="M9 5H7C5.89543 5 5 5.89543 5 7V19C5 20.1046 5.89543 21 7 21H17C18.1046 21 19 20.1046 19 19V7C19 5.89543 18.1046 5 17 5H15M9 5C9 6.10457 9.89543 7 11 7H13C14.1046 7 15 6.10457 15 5M9 5C9 3.89543 9.89543 3 11 3H13C14.1046 3 15 3.89543 15 5"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M9 14L11 16L15 12"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-            <span
-              className={`ml-2 text-2xl font-bold text-indigo-600 transition-all duration-700 ${
-                isVisible
-                  ? "opacity-100 translate-x-0"
-                  : "opacity-0 -translate-x-4"
-              }`}
-            >
-              <h1 className="text-2xl font-bold text-gray-800">
-                Task AI <span className="text-indigo-600">Studio</span>
-              </h1>
-            </span>
-          </div>
+        <div className="container mx-auto px-6 py-4">
+          <div className="flex justify-between items-center">
+            {/* Logo Section */}
+            <div className="flex items-center group">
+              {/* Futuristic Logo Icon */}
+              <div className="relative">
+                <svg
+                  className="h-10 w-10 text-cyan-400 transition-all duration-700 group-hover:text-teal-300 group-hover:scale-110"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  style={{
+                    filter: 'drop-shadow(0 0 8px rgba(6, 182, 212, 0.4))'
+                  }}
+                >
+                  {/* Neural network inspired icon */}
+                  <path
+                    d="M12 2L15.09 8.26L22 9L17 14L18.18 21L12 17.77L5.82 21L7 14L2 9L8.91 8.26L12 2Z"
+                    fill="currentColor"
+                    className="animate-pulse"
+                  />
+                  <circle cx="12" cy="12" r="3" fill="currentColor" opacity="0.6" />
+                  <circle cx="12" cy="12" r="1" fill="currentColor" />
+                </svg>
+                {/* Glowing ring around logo */}
+                <div className="absolute inset-0 rounded-full border border-cyan-400/30 animate-ping opacity-0 group-hover:opacity-100"></div>
+              </div>
 
-          {/* Desktop Nav */}
-          <div className="hidden md:flex items-center space-x-8">
-            {["Features", "How it Works", "Pricing"].map((item, index) => (
-              <a
-                key={item}
-                href={`#${item.toLowerCase().replace(/\s+/g, "-")}`}
-                className={`text-gray-600 hover:text-indigo-600 transition-all duration-500 ${
-                  isVisible
-                    ? "opacity-100 translate-y-0"
-                    : "opacity-0 -translate-y-4"
-                }`}
-                style={{ transitionDelay: `${index * 100}ms` }}
+              {/* Brand Text */}
+              <div className="ml-4">
+                <h1 
+                  className="text-2xl font-bold bg-gradient-to-r from-cyan-400 via-teal-300 to-blue-400 bg-clip-text text-transparent transition-all duration-700 group-hover:from-teal-300 group-hover:to-cyan-300"
+                  style={{ 
+                    fontFamily: "'Orbitron', 'Audiowide', sans-serif",
+                    textShadow: '0 0 20px rgba(6, 182, 212, 0.3)'
+                  }}
+                >
+                  Task AI <span className="text-gray-300 font-light">Studio</span>
+                </h1>
+                <div className="h-0.5 bg-gradient-to-r from-cyan-400 to-transparent w-0 group-hover:w-full transition-all duration-500"></div>
+              </div>
+            </div>
+
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center space-x-8">
+              {[
+                { name: "Features", href: "#features" },
+                { name: "How it Works", href: "#how-it-works" },
+                { name: "Pricing", href: "#pricing" }
+              ].map((item, index) => (
+                <a
+                  key={item.name}
+                  href={item.href}
+                  className="relative group text-gray-300 hover:text-cyan-300 transition-all duration-500 font-medium"
+                  style={{ 
+                    transitionDelay: `${index * 100}ms`,
+                    fontFamily: "'Montserrat', sans-serif"
+                  }}
+                >
+                  <span className="relative z-10">{item.name}</span>
+                  {/* Hover effect underline */}
+                  <div className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-cyan-400 to-teal-400 group-hover:w-full transition-all duration-500"></div>
+                  {/* Glowing dot */}
+                  <div className="absolute -left-2 top-1/2 transform -translate-y-1/2 w-1 h-1 bg-cyan-400 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                </a>
+              ))}
+            </div>
+
+            {/* CTA Buttons */}
+            <div className="hidden md:flex items-center space-x-4">
+              <Link
+                to="/login"
+                className="relative px-6 py-2 text-cyan-300 font-medium hover:text-white transition-all duration-500 group"
+                style={{ fontFamily: "'Montserrat', sans-serif" }}
               >
-                {item}
-              </a>
-            ))}
+                <span className="relative z-10">Sign In</span>
+                <div className="absolute inset-0 border border-cyan-500/30 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="absolute inset-0 bg-cyan-500/10 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              </Link>
+              
+              <Link
+                to="/signup"
+                className="relative px-6 py-2 bg-gradient-to-r from-cyan-500 to-teal-500 text-gray-900 rounded-lg font-bold transition-all duration-500 hover:scale-105 hover:shadow-lg hover:shadow-cyan-500/25 group overflow-hidden"
+                style={{ fontFamily: "'Montserrat', sans-serif" }}
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-teal-400 to-cyan-400 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-500"></div>
+                <span className="relative z-10 flex items-center gap-2">
+                  🚀 Get Started
+                </span>
+              </Link>
+            </div>
+
+            {/* Mobile Menu Button */}
+            <button
+              className="md:hidden text-gray-300 hover:text-cyan-300 focus:outline-none transition-colors duration-300"
+              onClick={() => setMenuOpen(!menuOpen)}
+            >
+              <svg
+                className="h-6 w-6 transition-transform duration-300"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                style={{
+                  transform: menuOpen ? 'rotate(90deg)' : 'rotate(0deg)'
+                }}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d={
+                    menuOpen 
+                      ? "M6 18L18 6M6 6l12 12" 
+                      : "M4 6h16M4 12h16M4 18h16"
+                  }
+                />
+              </svg>
+            </button>
           </div>
 
-          <div className="hidden md:flex items-center space-x-4">
-            <Link
-              to="/login"
-              className={`px-4 py-2 text-indigo-600 font-medium hover:text-indigo-700 transition-all duration-700 ${
-                isVisible
-                  ? "opacity-100 translate-y-0"
-                  : "opacity-0 -translate-y-4"
-              }`}
-              style={{ transitionDelay: "200ms" }}
-            >
-              Sign In
-            </Link>
-            <Link
-              to="/signup"
-              className={`px-4 py-2 bg-indigo-600 text-white rounded-md font-medium hover:bg-indigo-700 transition-all duration-700 hover:scale-105 ${
-                isVisible
-                  ? "opacity-100 translate-y-0"
-                  : "opacity-0 -translate-y-4"
-              }`}
-              style={{ transitionDelay: "200ms" }}
-            >
-              Get Started
-            </Link>
-          </div>
-
-          {/* Mobile Toggle Button */}
-          <button
-            className="md:hidden text-gray-500 focus:outline-none"
-            onClick={() => setMenuOpen(!menuOpen)}
+          {/* Mobile Menu */}
+          <div 
+            className={`md:hidden mt-4 transition-all duration-500 ease-in-out ${
+              menuOpen 
+                ? "max-h-96 opacity-100" 
+                : "max-h-0 opacity-0 overflow-hidden"
+            }`}
           >
-            <svg
-              className="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d={
-                  menuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"
-                }
-              />
-            </svg>
-          </button>
-        </div>
-
-        {/* Mobile Menu */}
-        {menuOpen && (
-          <div className="md:hidden mt-4 space-y-2 px-6">
-            {["Features", "How it Works", "Pricing"].map((item) => (
-              <a
-                key={item}
-                href={`#${item.toLowerCase().replace(/\s+/g, "-")}`}
-                className="block text-gray-600 hover:text-indigo-600 transition-all duration-300"
-              >
-                {item}
-              </a>
-            ))}
-            <hr className="my-2" />
-            <Link
-              to="/login"
-              className="block text-indigo-600 font-medium hover:text-indigo-700 transition duration-300"
-            >
-              Sign In
-            </Link>
-            <Link
-              to="/signup"
-              className="block bg-indigo-600 text-white text-center rounded-md py-2 font-medium hover:bg-indigo-700 transition duration-300"
-            >
-              Get Started
-            </Link>
+            <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl border border-gray-700/50 p-6 space-y-4">
+              {[
+                { name: "Features", href: "#features" },
+                { name: "How it Works", href: "#how-it-works" },
+                { name: "Pricing", href: "#pricing" }
+              ].map((item, index) => (
+                <a
+                  key={item.name}
+                  href={item.href}
+                  className="block text-gray-300 hover:text-cyan-300 transition-all duration-300 font-medium py-2 border-l-2 border-transparent hover:border-cyan-400 pl-4 hover:pl-6"
+                  onClick={() => setMenuOpen(false)}
+                  style={{ 
+                    fontFamily: "'Montserrat', sans-serif",
+                    transitionDelay: `${index * 50}ms`
+                  }}
+                >
+                  {item.name}
+                </a>
+              ))}
+              
+              <hr className="border-gray-700/50 my-4" />
+              
+              <div className="space-y-3">
+                <Link
+                  to="/login"
+                  className="block text-cyan-300 font-medium hover:text-white transition duration-300 py-2 px-4 rounded-lg hover:bg-gray-700/30"
+                  onClick={() => setMenuOpen(false)}
+                  style={{ fontFamily: "'Montserrat', sans-serif" }}
+                >
+                  Sign In
+                </Link>
+                <Link
+                  to="/signup"
+                  className="block bg-gradient-to-r from-cyan-500 to-teal-500 text-gray-900 text-center rounded-lg py-3 font-bold hover:scale-105 transition-transform duration-300"
+                  onClick={() => setMenuOpen(false)}
+                  style={{ fontFamily: "'Montserrat', sans-serif" }}
+                >
+                  🚀 Get Started
+                </Link>
+              </div>
+            </div>
           </div>
-        )}
+        </div>
       </nav>
+
+      {/* Custom Styles */}
+      <style jsx>{`
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Audiowide&family=Montserrat:wght@300;400;500;600;700&display=swap');
+      `}</style>
     </div>
   );
 };
