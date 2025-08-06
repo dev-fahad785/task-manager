@@ -150,7 +150,7 @@ const Footer = () => {
                                 { name: "Pricing", href: "#pricing" },
                                 { name: "Sign In", href: "/login" },
                                 { name: "Get Started", href: "/signup" }
-                            ].map((link, index) => (
+                            ].map((link) => (
                                 <li key={link.name}>
                                     <a
                                         href={link.href}
@@ -183,7 +183,7 @@ const Footer = () => {
                                 "Smart Deadline Tracking",
                                 "Energy-Aware Scheduling",
                                 "Productivity Pattern Learning"
-                            ].map((feature, index) => (
+                            ].map((feature, ) => (
                                 <li 
                                     key={feature}
                                     className="flex items-center gap-3 text-gray-400"
