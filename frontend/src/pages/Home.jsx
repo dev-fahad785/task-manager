@@ -1,23 +1,30 @@
-import React, { useState,useRef } from "react";
-import { Link } from "react-router-dom";
-
+import React, { useState, useRef, useEffect } from "react";
 import Footer from "../components/Footer";
 import Analytics from "../components/Analytics";
 import Navbar from "./Home/Navbar";
 import Hero from "./Home/Hero";
-// import { Feather } from 'lucide-
 import Feature from "./Home/Feature";
 import Pricing from "./Home/Pricing";
 import HowItWorks from "./Home/HowItWorks";
 import Testimonials from "./Home/Testimonials";
-const Home = () => {
-  // States for controlling animations
 
+const Home = () => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const heroRef = useRef(null);
+
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      setMousePosition({
+        x: e.clientX / window.innerWidth - 0.5,
+        y: e.clientY / window.innerHeight - 0.5,
+      });
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, []);
+
   // Floating particles animation
   const FloatingParticles = () => (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+    <div className="fixed inset-0 z-0 pointer-events-none">
       {[...Array(30)].map((_, i) => (
         <div
           key={i}
@@ -35,7 +42,7 @@ const Home = () => {
 
   // Neural network background lines
   const NeuralNetwork = () => (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-10">
+    <div className="fixed inset-0 z-0 pointer-events-none opacity-10">
       <svg className="absolute inset-0 w-full h-full">
         {[...Array(15)].map((_, i) => (
           <line
@@ -63,34 +70,35 @@ const Home = () => {
   // Cursor illumination effect
   const CursorIllumination = () => (
     <div
-      className="absolute pointer-events-none transition-all duration-500 ease-out"
+      className="fixed pointer-events-none z-0 transition-all duration-500 ease-out"
       style={{
-        left: `${50 + mousePosition.x * 50}%`,
-        top: `${50 + mousePosition.y * 50}%`,
+        left: `${50 + mousePosition.x * 100}%`,
+        top: `${50 + mousePosition.y * 100}%`,
         transform: "translate(-50%, -50%)",
         background: `radial-gradient(circle, rgba(6, 182, 212, 0.15) 0%, rgba(6, 182, 212, 0.05) 40%, transparent 70%)`,
         width: "600px",
         height: "600px",
         borderRadius: "50%",
+        position: "fixed",
       }}
     />
   );
 
   return (
-    <div ref={heroRef}>
+    <div className="relative min-h-screen w-full">
       <FloatingParticles />
       <NeuralNetwork />
       <CursorIllumination />
-      <Navbar />
-      <Hero />
-      <Analytics />
-      <Feature />
-      <Testimonials />
-      <Pricing />
-      <HowItWorks />
-      
-      <Footer />
-      
+      <div className="relative z-10">
+        <Navbar />
+        <Hero />
+        <Analytics />
+        <Feature />
+        <Testimonials />
+        <Pricing />
+        <HowItWorks />
+        <Footer />
+      </div>
     </div>
   );
 };
