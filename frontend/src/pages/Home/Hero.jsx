@@ -9,7 +9,7 @@ const Hero = () => {
   const heroRef = useRef(null);
   const videoRef = useRef(null);
 
-  const words = ["Forget", "Miss", "Mental"];
+  const words = ["Forget","Miss Task","Late"];
   const fullText = "Never ";
 
   // Typewriter effect
@@ -24,17 +24,21 @@ const Hero = () => {
       if (!isDeleting && currentIndex <= currentWord.length) {
         setTypedText(currentWord.substring(0, currentIndex));
         currentIndex++;
-        setTimeout(typeWriter, 100);
+        setTimeout(typeWriter, 80); // Slightly faster typing
       } else if (!isDeleting && currentIndex > currentWord.length) {
-        setTimeout(() => { isDeleting = true; typeWriter(); }, 2000);
+        // Pause before starting to delete
+        setTimeout(() => { 
+          isDeleting = true; 
+          typeWriter(); 
+        }, 1500); // Longer pause at full word
       } else if (isDeleting && currentIndex >= 0) {
         setTypedText(currentWord.substring(0, currentIndex));
         currentIndex--;
-        setTimeout(typeWriter, 50);
+        setTimeout(typeWriter, 40); // Faster erasing
       } else if (isDeleting && currentIndex < 0) {
         isDeleting = false;
         setCurrentWordIndex((prev) => (prev + 1) % words.length);
-        setTimeout(typeWriter, 500);
+        setTimeout(typeWriter, 300); // Short pause before next word
       }
     };
 
@@ -61,73 +65,10 @@ const Hero = () => {
     }
   }, []);
 
-  // Floating particles animation
-  const FloatingParticles = () => (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {[...Array(30)].map((_, i) => (
-        <div
-          key={i}
-          className="absolute w-1 h-1 bg-cyan-400 rounded-full opacity-20"
-          style={{
-            left: `${Math.random() * 100}%`,
-            top: `${Math.random() * 100}%`,
-            animation: `float ${3 + Math.random() * 4}s ease-in-out infinite`,
-            animationDelay: `${Math.random() * 3}s`,
-          }}
-        />
-      ))}
-    </div>
-  );
-
-  // Neural network background lines
-  const NeuralNetwork = () => (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-10">
-      <svg className="absolute inset-0 w-full h-full">
-        {[...Array(15)].map((_, i) => (
-          <line
-            key={i}
-            x1={`${Math.random() * 100}%`}
-            y1={`${Math.random() * 100}%`}
-            x2={`${Math.random() * 100}%`}
-            y2={`${Math.random() * 100}%`}
-            stroke="url(#gradient)"
-            strokeWidth="1"
-            className="animate-pulse"
-          />
-        ))}
-        <defs>
-          <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#06B6D4" stopOpacity="0" />
-            <stop offset="50%" stopColor="#06B6D4" stopOpacity="0.6" />
-            <stop offset="100%" stopColor="#06B6D4" stopOpacity="0" />
-          </linearGradient>
-        </defs>
-      </svg>
-    </div>
-  );
-
-  // Cursor illumination effect
-  const CursorIllumination = () => (
-    <div
-      className="absolute pointer-events-none transition-all duration-500 ease-out"
-      style={{
-        left: `${50 + mousePosition.x * 50}%`,
-        top: `${50 + mousePosition.y * 50}%`,
-        transform: 'translate(-50%, -50%)',
-        background: `radial-gradient(circle, rgba(6, 182, 212, 0.15) 0%, rgba(6, 182, 212, 0.05) 40%, transparent 70%)`,
-        width: '600px',
-        height: '600px',
-        borderRadius: '50%',
-      }}
-    />
-  );
 
   return (
     <div ref={heroRef} className="relative min-h-screen bg-gray-900 overflow-hidden">
       {/* Background Effects */}
-      <FloatingParticles />
-      <NeuralNetwork />
-      <CursorIllumination />
       
       {/* Main Content */}
       <section className="relative z-10 container mx-auto px-6 py-16 md:py-24">
@@ -151,11 +92,18 @@ const Hero = () => {
                 <span className="text-gray-100">
                   {fullText}
                 </span>
-                <span className="relative">
-                  <span className="bg-gradient-to-r from-cyan-400 via-blue-400 to-teal-400 bg-clip-text text-transparent">
+                <span className="relative inline-block">
+                  {/* Fixed width container to prevent layout shift */}
+                  <span 
+                    className="inline-block bg-gradient-to-r from-cyan-400 via-blue-400 to-teal-400 bg-clip-text text-transparent"
+                    style={{ 
+                      minWidth: '400px', // Adjust based on your longest word
+                      textAlign: 'left'
+                    }}
+                  >
                     {typedText}
                   </span>
-                  <span className="animate-pulse text-cyan-400 text-6xl md:text-7xl">|</span>
+                  <span className="animate-pulse text-cyan-400 text-6xl md:text-7xl ml-1">|</span>
                   <div className="absolute -inset-2 bg-gradient-to-r from-cyan-500/20 to-teal-500/20 rounded-lg blur-xl -z-10"></div>
                 </span>
               </h1>
