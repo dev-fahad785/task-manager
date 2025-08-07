@@ -46,24 +46,7 @@ const Hero = () => {
     return () => clearTimeout(timer);
   }, [currentWordIndex]);
 
-  // Mouse tracking for parallax effects
-  useEffect(() => {
-    const handleMouseMove = (e) => {
-      if (heroRef.current) {
-        const rect = heroRef.current.getBoundingClientRect();
-        setMousePosition({
-          x: (e.clientX - rect.left - rect.width / 2) / rect.width,
-          y: (e.clientY - rect.top - rect.height / 2) / rect.height,
-        });
-      }
-    };
 
-    const heroElement = heroRef.current;
-    if (heroElement) {
-      heroElement.addEventListener("mousemove", handleMouseMove);
-      return () => heroElement.removeEventListener("mousemove", handleMouseMove);
-    }
-  }, []);
 
 
   return (

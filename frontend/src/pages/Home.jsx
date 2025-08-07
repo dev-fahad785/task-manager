@@ -10,12 +10,13 @@ import Testimonials from "./Home/Testimonials";
 
 const Home = () => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-
+  const heroRef = useRef(null);
   useEffect(() => {
+    // Mouse tracking for parallax effects
     const handleMouseMove = (e) => {
       setMousePosition({
-        x: e.clientX / window.innerWidth - 0.5,
-        y: e.clientY / window.innerHeight - 0.5,
+        x: (e.clientX / window.innerWidth) - 0.5,
+        y: (e.clientY / window.innerHeight) - 0.5,
       });
     };
     window.addEventListener("mousemove", handleMouseMove);
@@ -89,7 +90,7 @@ const Home = () => {
       <FloatingParticles />
       <NeuralNetwork />
       <CursorIllumination />
-      <div className="relative z-10">
+      <div ref={heroRef} className="relative z-10">
         <Navbar />
         <Hero />
         <Analytics />
