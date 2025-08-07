@@ -3,7 +3,8 @@ import { Link } from "react-router-dom";
 
 const Hero = () => {
   const [isVisible, setIsVisible] = useState(false);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  // const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const mousePosition ={ x: 0, y: 0 };
   const [typedText, setTypedText] = useState("");
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const heroRef = useRef(null);
