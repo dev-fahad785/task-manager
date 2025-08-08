@@ -5,7 +5,7 @@ const ResponsiveHeroSection = () => {
   const [typedText, setTypedText] = useState('');
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const heroRef = useRef(null);
-  // const videoRef = useRef(null);
+  const videoRef = useRef(null);
 
   const fullText = "Never Forget To ";
   const words = ["Work", "Exercise", "Study", "Create"];
@@ -225,35 +225,38 @@ const ResponsiveHeroSection = () => {
               </div>
               
               {/* Video container */}
-              <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-cyan-500/30 shadow-2xl shadow-cyan-500/20 transform group-hover:scale-105 transition-all duration-700">
-                <div className="aspect-video bg-gray-800 flex items-center justify-center text-cyan-400">
-                  {/* Placeholder for video */}
-                  <div className="text-center">
-                    <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 border-2 border-cyan-400 rounded-full flex items-center justify-center">
-                      <svg className="w-6 h-6 sm:w-8 sm:h-8 ml-1" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M8 5v14l11-7z"/>
-                      </svg>
-                    </div>
-                    <p className="text-sm sm:text-base font-medium">Task AI Studio Dashboard</p>
-                    <p className="text-xs sm:text-sm opacity-60 mt-1">Demo Video</p>
-                  </div>
-                </div>
-                
-                {/* Video overlay with circuit pattern */}
-                <div className="absolute inset-0 bg-gradient-to-t from-gray-900/40 via-transparent to-cyan-900/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl sm:rounded-3xl"></div>
-                
-                {/* Futuristic play button */}
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500">
-                  <div className="relative">
-                    <div className="w-16 h-16 sm:w-20 sm:h-20 bg-cyan-500/20 backdrop-blur-md rounded-full flex items-center justify-center transform scale-0 group-hover:scale-100 transition-transform duration-700 border border-cyan-400/50">
-                      <svg className="w-6 h-6 sm:w-8 sm:h-8 text-cyan-300 ml-1" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M8 5v14l11-7z"/>
-                      </svg>
-                    </div>
-                    <div className="absolute inset-0 rounded-full bg-cyan-400/10 animate-ping"></div>
-                  </div>
-                </div>
-              </div>
+          <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-cyan-500/30 shadow-2xl shadow-cyan-500/20 transform group-hover:scale-105 transition-all duration-700">
+  
+  {/* Video Element */}
+  <div className="aspect-video relative bg-black">
+    <video
+      autoPlay
+      loop
+      muted
+      ref={videoRef}
+      // src="/banner-video.mp4"  // 👈 Put your video path here
+      src="/banner-video.mp4"  // 👈 Put your video path here
+      controls
+      className="w-full h-full object-cover rounded-2xl sm:rounded-3xl"
+    />
+  </div>
+
+  {/* Overlay with gradient */}
+  <div className="absolute inset-0 bg-gradient-to-t from-gray-900/40 via-transparent to-cyan-900/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl sm:rounded-3xl"></div>
+  
+  {/* Futuristic play button overlay (optional if video is autoplay or controls are enough) */}
+  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500">
+    <div className="relative">
+      <div className="w-16 h-16 sm:w-20 sm:h-20 bg-cyan-500/20 backdrop-blur-md rounded-full flex items-center justify-center transform scale-0 group-hover:scale-100 transition-transform duration-700 border border-cyan-400/50">
+        <svg className="w-6 h-6 sm:w-8 sm:h-8 text-cyan-300 ml-1" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M8 5v14l11-7z"/>
+        </svg>
+      </div>
+      <div className="absolute inset-0 rounded-full bg-cyan-400/10 animate-ping"></div>
+    </div>
+  </div>
+</div>
+
 
               {/* Decorative tech elements */}
               <div className="absolute -top-2 sm:-top-4 -left-2 sm:-left-4 w-12 h-12 sm:w-16 sm:h-16 border border-cyan-400/30 rounded-full animate-spin-slow opacity-40">
