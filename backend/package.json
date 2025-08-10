@@ -19,6 +19,7 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2",
+    "luxon": "^3.7.1",
     "mongoose": "^8.12.1",
     "node-cron": "^4.1.1",
     "puppeteer-core": "^24.8.1",

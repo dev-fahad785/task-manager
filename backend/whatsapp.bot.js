@@ -1,4 +1,3 @@
-
 import cron from 'node-cron';
 import pkg from 'whatsapp-web.js';
 const { Client, LocalAuth } = pkg;
@@ -72,6 +71,7 @@ const processMessageQueue = async () => {
 
   isProcessingQueue = false;
 };
+const waitingForTaskInput = new Set(); // Track users waiting to input tasks
 
 // Show QR on terminal
 client.on('qr', (qr) => {
@@ -486,35 +486,29 @@ www.taskai.studio
 📌 Type *0* for main menu`;
         break;
 
-case '7':
-  try {
-    // Call the Wit AI test function with a sample message
-    const witres = await runWitTest("urgent text sir bilal for task assignment till 5pm today");
-    console.log(witres);
-    responseMessage = `🤖 *AI Task Parser*
+      case '7':
+        // Set user state to waiting for task input
+        waitingForTaskInput.add(number);
+        
+        responseMessage = `🤖 *AI Task Parser*
 
 Hello ${userName}! 👋
 
-*Test Result:*
-• 🎯 Intent: ${witres.intent || 'Not detected'}
-• 📅 Date/Time: ${witres.datetime || 'Not specified'}
-• ⭐ Priority: ${witres.priority || 'Not specified'}
+📝 *Please type your task below:*
 
-📌 Type *0* for main menu`;
-  } catch (error) {
-    console.error('Error with Wit AI test:', error);
-    responseMessage = `❌ *AI Parser Error*
+*Examples:*
+• "Call John about project deadline tomorrow 3pm"
+• "Buy groceries this weekend high priority"
+• "Submit report by Friday urgent"
 
-Unable to process AI task parsing right now.
+💡 *I'll analyze your message and extract:*
+• 🎯 Task intent
+• 📅 Date/Time
+• ⭐ Priority level
 
-*Try:*
-• Wait a moment and try again
-• Contact support
-• Visit www.taskai.studio directly
+*Type your task now:* 👇`;
+        break;
 
-📌 Type *0* for main menu`;
-  }
-  break;
       case '8':
         responseMessage = `💬 *We Value Your Feedback!*
 
@@ -706,11 +700,50 @@ client.on('message', async (message) => {
       await sendMenu(message.from);
 
     } else {
-      // Enhanced help for invalid input
-      await sendMessageWithDelay(message.from,
-        `❓ *I didn't understand that*\n\nHere's what you can do:\n\n*📋 Quick Options:*\n• Type *0-9* to use the menu\n• Type *menu* to see all options\n• Type *help* for assistance\n\n*💡 Popular commands:*\n• *1* - Today's tasks\n• *5* - Productivity report\n• *0* - Main menu\n\n🔄 *Account Info:*\nIt looks like your account might already be connected. To connect a new one, type *logout*`
-      );
-    }
+      // Check if user is waiting to input a task for AI parsing
+      if (waitingForTaskInput.has(number)) {
+        try {
+          // Remove user from waiting state
+          waitingForTaskInput.delete(number);
+          
+          // Send the user's message to Wit AI
+          const witres = await runWitTest(content);
+          console.log('Wit AI result:', witres);
+          
+          await sendMessageWithDelay(message.from, `🤖 *AI Task Analysis Complete*
+
+*Your Task:* "${content}"
+
+*🔍 AI Analysis Results:*
+• 🎯 Intent: ${witres.intent || 'Not detected'}
+• 📅 Date/Time: ${witres.datetime || 'Not specified'}  
+• ⭐ Priority: ${witres.priority || 'Not specified'}
+• 📋 Task Type: ${witres.taskType || 'General task'}
+
+*💡 Tips:*
+• Visit www.taskai.studio to save this task
+• Add more details for better AI recognition
+
+📌 Type *0* for main menu or *7* to analyze another task`);
+          return; // Exit early to prevent other message handling
+          
+        } catch (error) {
+          console.error('Error with Wit AI analysis:', error);
+          await sendMessageWithDelay(message.from, `❌ *AI Analysis Failed*
+
+Sorry, I couldn't analyze your task right now.
+
+*Your Task:* "${content}"
+
+*Please try:*
+• Try again with option *7*
+• Visit www.taskai.studio to add manually
+• Contact support if issue persists
+
+📌 Type *0* for main menu`);
+          }
+        }
+      }
   }
 
 });
