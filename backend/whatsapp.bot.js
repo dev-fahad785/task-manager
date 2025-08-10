@@ -165,7 +165,7 @@ const sendMenu = async (chatId) => {
 *6* - 📊 Analytics Dashboard
 
 *🛠️ SUPPORT*
-*7* - 🆘 Technical Support
+*7* - 🆘 Add Task 
 *8* - 💬 Send Feedback
 *9* - 🌐 Social Media
 
@@ -497,14 +497,10 @@ Hello ${userName}! 👋
 📝 *Please type your task below:*
 
 *Examples:*
-• "Call John about project deadline tomorrow 3pm"
-• "Buy groceries this weekend high priority"
+• "Task / deadline / priority"
+• "Buy groceries today 6pm  high priority"
 • "Submit report by Friday urgent"
 
-💡 *I'll analyze your message and extract:*
-• 🎯 Task intent
-• 📅 Date/Time
-• ⭐ Priority level
 
 *Type your task now:* 👇`;
         break;
