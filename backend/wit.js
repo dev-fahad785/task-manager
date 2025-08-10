@@ -1,7 +1,7 @@
 import axios from "axios";
 import { DateTime } from "luxon";
 
-const WIT_TOKEN = "Bearer "; // replace with your actual token
+const WIT_TOKEN = "Bearer 72HIVMNTYWLQBNYTKOULYUBXDKTGUIOX"; // replace with your actual token
 
 export const runWitTest = async (message) => {
   try {
@@ -13,7 +13,7 @@ export const runWitTest = async (message) => {
         "Content-Type": "application/json",
       },
     });
-
+    console.log("Wit AI Response from wit js:", response.data);
     const { intents, entities } = response.data;
 
     const intent = intents?.[0]?.name || "No intent detected";
@@ -36,9 +36,9 @@ export const runWitTest = async (message) => {
 
     const priority = entities["priority:priority"]?.[0]?.value || "low";
 
-    return { intent, datetime, priority };
+    return { text: message, intent, datetime, priority };
   } catch (error) {
     console.error("❌ Error:", error.response?.data || error.message);
-    return { intent: "Error", datetime: "Error", priority: "Error" };
+    return { text: message, intent: "Error", datetime: "Error", priority: "Error" };
   }
 };

@@ -274,3 +274,32 @@ export const getTasksCount = async (req, res) => {
         res.status(500).json({ message: "An error occurred while fetching tasks count", error: error.message });
     }
 }
+
+export const addTaskFromWhatsapp =async(number,task)=>{
+    console.log(number,task)
+    try{
+        const user = await UserModel.findOne({ whatsappNumber: number });
+        if (!user) {
+            console.log(`User not found for number: ${number}`);
+            return;
+        }
+        const newTask = new TaskModel({
+            user_id: user._id,
+            title: task.title,
+            description: task.description,
+            estTime: task.estTime,  // Map estimatedTime to estTime
+            dueDate: task.dueDate,
+            priority: task.priority
+        });
+        const savedTask = await newTask.save();
+        // Push the task ID into user's `tasks` array
+        user.task_id.push(savedTask._id);
+        await user.save();
+        console.log(`Task added successfully for user: ${user._id}`);
+        return savedTask;
+    }
+    catch (error) {
+        console.error(error);
+        return null;
+    }
+}

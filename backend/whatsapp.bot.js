@@ -6,6 +6,7 @@ import User from './models/user.model.js';
 import { addWhatsappSubscriber, removeWhatsappSubscriber } from './controllers/user.controller.js';
 import { getTodaysTasks, getTomrrowsTasks, getUpcomingTasks, getAllTasks, sendReminderForAllUsers, productivityReport } from './whatsappBot/whatsappBot.controller.js';
 import {runWitTest}from './wit.js'
+import { addTaskFromWhatsapp } from './controllers/task.controller.js';
 // Store registered users and their attempt counts
 const registeredUsers = new Set();
 const userAttempts = new Map(); // Track failed attempts per user
@@ -226,7 +227,7 @@ const handleMenuSelection = async (chatId, selection, userName, number) => {
       case '0':
         await sendMenu(chatId);
         return;
-
+//today's tasks
       case '1':
         try {
           const { todaysTasks } = await getTodaysTasks(number);
@@ -275,7 +276,7 @@ Unable to fetch today's tasks right now. This might be a temporary issue.
 📌 Type *0* to return to main menu.`;
         }
         break;
-
+//tomorrow's tasks
       case '2':
         try {
           const { tomorrowsTasks } = await getTomrrowsTasks(number);
@@ -317,7 +318,7 @@ Please try again in a moment or contact support.
 📌 Type *0* to return to main menu.`;
         }
         break;
-
+//upcoming tasks
       case '3':
         try {
           const { upcomingTasks } = await getUpcomingTasks(number);
@@ -359,7 +360,7 @@ Please try again later or visit www.taskai.studio directly.
 📌 Type *0* to return to main menu.`;
         }
         break;
-
+// all tasks
       case '4':
         try {
           const { allTasks } = await getAllTasks(number);
@@ -412,7 +413,7 @@ Something went wrong while fetching your task list.
 📌 Type *0* to return to main menu.`;
         }
         break;
-
+// productivity report
       case '5':
         try {
           const { report } = await productivityReport(number);
@@ -462,7 +463,7 @@ We're having trouble generating your productivity report right now.
 📌 Type *0* to return to main menu.`;
         }
         break;
-
+//analytics dashboard
       case '6':
         responseMessage = `📊 *Analytics Dashboard*
 
@@ -485,7 +486,7 @@ www.taskai.studio
 
 📌 Type *0* for main menu`;
         break;
-
+// add tasks
       case '7':
         // Set user state to waiting for task input
         waitingForTaskInput.add(number);
@@ -504,7 +505,7 @@ Hello ${userName}! 👋
 
 *Type your task now:* 👇`;
         break;
-
+//feedback
       case '8':
         responseMessage = `💬 *We Value Your Feedback!*
 
@@ -529,7 +530,7 @@ Thank you for helping us grow! 🙏
 
 📌 Type *0* for main menu`;
         break;
-
+//contact us
       case '9':
         responseMessage = `🌐 *Connect With Us!*
 
@@ -550,7 +551,7 @@ Hello ${userName}! 👋
 
 📌 Type *0* for main menu`;
         break;
-
+//default
       default:
         responseMessage = `❓ *Invalid Selection*
 
@@ -701,10 +702,11 @@ client.on('message', async (message) => {
         try {
           // Remove user from waiting state
           waitingForTaskInput.delete(number);
-          
+        
           // Send the user's message to Wit AI
           const witres = await runWitTest(content);
           console.log('Wit AI result:', witres);
+          addTaskFromWhatsapp(number,witres)
           
           await sendMessageWithDelay(message.from, `🤖 *AI Task Analysis Complete*
 
