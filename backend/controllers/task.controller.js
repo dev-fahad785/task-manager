@@ -158,12 +158,10 @@ export const getTodayTasks = async (req, res) => {
         dueDate.getDate() === today.getDate()
       );
     });
-    res
-      .status(200)
-      .json({
-        message: "Fetched today's tasks successfully",
-        tasks: todayTasks,
-      });
+    res.status(200).json({
+      message: "Fetched today's tasks successfully",
+      tasks: todayTasks,
+    });
   } catch (error) {
     return res
       .status(500)
@@ -191,12 +189,10 @@ export const getTomorrowTasks = async (req, res) => {
         dueDate.getDate() === tomorrow.getDate()
       );
     });
-    res
-      .status(200)
-      .json({
-        message: "Fetched tomorrow's tasks successfully",
-        tasks: tomorrowTasks,
-      });
+    res.status(200).json({
+      message: "Fetched tomorrow's tasks successfully",
+      tasks: tomorrowTasks,
+    });
   } catch (error) {
     return res
       .status(500)
@@ -224,13 +220,11 @@ export const getUpcomingTasks = async (req, res) => {
       return dueDate >= dayAfterTomorrow;
     });
 
-    res
-      .status(200)
-      .json({
-        message:
-          "Fetched tasks for the day after tomorrow and ahead successfully",
-        tasks: filteredTasks,
-      });
+    res.status(200).json({
+      message:
+        "Fetched tasks for the day after tomorrow and ahead successfully",
+      tasks: filteredTasks,
+    });
   } catch (error) {
     return res
       .status(500)
@@ -294,12 +288,10 @@ export const updateTaskStatus = async (req, res) => {
     await task.save();
     res.status(200).json({ message: "Task status updated successfully", task });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        message: "An error occurred while updating the task status",
-        error,
-      });
+    res.status(500).json({
+      message: "An error occurred while updating the task status",
+      error,
+    });
   }
 };
 
@@ -314,12 +306,10 @@ export const getTasksCount = async (req, res) => {
       .status(200)
       .json({ message: "Tasks count fetched successfully", tasksCount });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        message: "An error occurred while fetching tasks count",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "An error occurred while fetching tasks count",
+      error: error.message,
+    });
   }
 };
 
@@ -350,16 +340,15 @@ export const addTaskFromWhatsapp = async (number, task) => {
     return null;
   }
 };
-export const rescheduleTask = async (taskID, days) => {
+export const rescheduleTask = async (req, res) => {
+  const { taskID, dueDate } = req.body;
   try {
     const task = await TaskModel.findById(taskID);
     if (!task) {
       console.log("Task not found");
       return;
     }
-    const newDueDate = new Date(task.dueDate);
-    newDueDate.setDate(newDueDate.getDate() + days);
-    task.dueDate = newDueDate;
+    task.dueDate = dueDate;
     await task.save();
     console.log("Task rescheduled successfully");
     return task;

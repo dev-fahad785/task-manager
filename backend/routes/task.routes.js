@@ -1,7 +1,7 @@
 import express from 'express'
 
 
-import { addTask, getAllTasks, deleteTask, updateTask, updateTaskStatus, getTodayTasks, getTomorrowTasks, getUpcomingTasks, getTasksCount } from '../controllers/task.controller.js'
+import { addTask, getAllTasks, deleteTask, updateTask, updateTaskStatus, getTodayTasks, getTomorrowTasks, getUpcomingTasks, getTasksCount,rescheduleTask } from '../controllers/task.controller.js'
 import { get } from 'mongoose';
 
 import { authorizeRoles } from '../middleware/authorizeRole.js';
@@ -20,4 +20,5 @@ router.get('/getTodayTasks/:id', authenticate,authorizeRoles('user','guest'),get
 router.get('/getTomorrowTasks/:id',authenticate,authorizeRoles('user','guest'), getTomorrowTasks) // Assuming this is the same as getAllTasks for tomorrow    
 router.get('/getUpcomingTasks/:id', authenticate,authorizeRoles('user','guest'),getUpcomingTasks)
 router.get('/getTasksCount', getTasksCount) // Assuming this is the same as getAllTasks for upcoming tasks
+router.patch('/rescheduleTask', authorizeRoles('user','guest'), rescheduleTask)
 export default router;
