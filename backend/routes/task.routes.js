@@ -20,5 +20,5 @@ router.get('/getTodayTasks/:id', authenticate,authorizeRoles('user','guest'),get
 router.get('/getTomorrowTasks/:id',authenticate,authorizeRoles('user','guest'), getTomorrowTasks) // Assuming this is the same as getAllTasks for tomorrow    
 router.get('/getUpcomingTasks/:id', authenticate,authorizeRoles('user','guest'),getUpcomingTasks)
 router.get('/getTasksCount', getTasksCount) // Assuming this is the same as getAllTasks for upcoming tasks
-router.patch('/rescheduleTask', authorizeRoles('user','guest'), rescheduleTask)
+router.patch('/rescheduleTask', authenticate,authorizeRoles('user','guest'), rescheduleTask)
 export default router;

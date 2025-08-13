@@ -349,6 +349,7 @@ export const rescheduleTask = async (req, res) => {
       return;
     }
     task.dueDate = dueDate;
+    task.completionStatus = "Pending"; 
     await task.save();
     console.log("Task rescheduled successfully");
     return task;

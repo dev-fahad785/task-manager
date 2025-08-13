@@ -241,6 +241,36 @@ function Dashboard() {
       sortTasksByDueDate();
     }
   }, [tasks]);
+const handleReschedule = async (task) => {
+  try {
+    // Calculate the new due date
+    const dueDate = new Date(task.dueDate);
+    dueDate.setDate(dueDate.getDate() + 1);
+
+    // Body matches backend expectation
+    const requestBody = {
+      taskID: task._id, // backend uses taskID, not whole task object
+      dueDate: dueDate.toISOString(),
+    };
+
+    console.log("Request Body:", requestBody);
+
+    const response = await axios.patch(
+      `${import.meta.env.VITE_BACKEND_URL}/task/rescheduleTask`,
+      requestBody,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    console.log("Task rescheduled successfully:", response.data);
+  } catch (error) {
+    console.error("Error rescheduling task:", error);
+  }
+};
+
 
   // console.log(user)
   return (
@@ -394,7 +424,12 @@ function Dashboard() {
                             </div>
                             {/* if the task is overdue then a btn is shown to reschedule it */}
                             {task.completionStatus === "Overdue" && (
-                              <button className="px-3 py-1.5 bg-yellow-500 text-white rounded-full text-sm font-medium shadow-sm hover:bg-yellow-600 transition-colors">
+                              <button
+                                onClick={() =>
+                                  handleReschedule(task, new Date(task.dueDate))
+                                }
+                                className="px-3 py-1.5 bg-yellow-500 text-white rounded-full text-sm font-medium shadow-sm hover:bg-yellow-600 transition-colors"
+                              >
                                 Reschedule
                               </button>
                             )}

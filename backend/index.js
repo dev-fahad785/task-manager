@@ -22,7 +22,7 @@ app.use(cookieParser());
 const allowedOrigins = ['https://task-ai-tau.vercel.app', 'http://localhost:5173', 'http://www.taskai.studio', 'https://www.taskai.studio']
 const corsOptions = {
     origin: allowedOrigins,
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE','PATCH'],
     credentials: true,
 }
 
