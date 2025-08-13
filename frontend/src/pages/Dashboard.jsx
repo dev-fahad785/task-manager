@@ -243,9 +243,9 @@ function Dashboard() {
   }, [tasks]);
 const handleReschedule = async (task) => {
   try {
-    // Calculate the new due date
-    const dueDate = new Date(task.dueDate);
-    dueDate.setDate(dueDate.getDate() + 1);
+    // Calculate the new due date which will be today's date 
+    const dueDate = new Date();
+    dueDate.setHours(23, 59, 0,0);
 
     // Body matches backend expectation
     const requestBody = {
