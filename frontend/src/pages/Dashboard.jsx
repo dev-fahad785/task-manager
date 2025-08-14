@@ -5,6 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import AiSuggestion from "../components/AiSuggestion";
 import Navbar from "../components/Navbar";
 import WebsiteTour from "../components/WebsiteTour";
+import InstallPWAButton from "../components/InstallPWA";
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -295,7 +296,7 @@ const handleReschedule = async (task) => {
             </h2>
             <AiSuggestion />
           </div>
-
+          <InstallPWAButton/>
           <div className="lg:col-span-3">
             <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 mb-6">
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
