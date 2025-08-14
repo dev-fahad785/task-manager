@@ -242,40 +242,40 @@ function Dashboard() {
       sortTasksByDueDate();
     }
   }, [tasks]);
-const handleReschedule = async (task) => {
-  try {
-    // Calculate the new due date which will be today's date 
-    const dueDate = new Date();
-    dueDate.setHours(23, 59, 0,0);
+  const handleReschedule = async (task) => {
+    try {
+      // Calculate the new due date which will be today's date
+      const dueDate = new Date();
+      dueDate.setHours(23, 59, 0, 0);
 
-    // Body matches backend expectation
-    const requestBody = {
-      taskID: task._id, // backend uses taskID, not whole task object
-      dueDate: dueDate.toISOString(),
-    };
+      // Body matches backend expectation
+      const requestBody = {
+        taskID: task._id, // backend uses taskID, not whole task object
+        dueDate: dueDate.toISOString(),
+      };
 
-    console.log("Request Body:", requestBody);
+      console.log("Request Body:", requestBody);
 
-    const response = await axios.patch(
-      `${import.meta.env.VITE_BACKEND_URL}/task/rescheduleTask`,
-      requestBody,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+      const response = await axios.patch(
+        `${import.meta.env.VITE_BACKEND_URL}/task/rescheduleTask`,
+        requestBody,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-    console.log("Task rescheduled successfully:", response.data);
-  } catch (error) {
-    console.error("Error rescheduling task:", error);
-  }
-};
-
+      console.log("Task rescheduled successfully:", response.data);
+    } catch (error) {
+      console.error("Error rescheduling task:", error);
+    }
+  };
 
   // console.log(user)
   return (
     <div className="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen relative ">
+      <InstallPWAButton />
       <LoaderScreen
         status={status}
         errorMessage={errorMsg}
@@ -296,7 +296,6 @@ const handleReschedule = async (task) => {
             </h2>
             <AiSuggestion />
           </div>
-          <InstallPWAButton/>
           <div className="lg:col-span-3">
             <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 mb-6">
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
