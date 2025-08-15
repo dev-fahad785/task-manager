@@ -314,7 +314,7 @@ export const getTasksCount = async (req, res) => {
 };
 
 export const addTaskFromWhatsapp = async (number, task) => {
-  console.log(number, task);
+  console.log("from controller task", task);
   try {
     const user = await UserModel.findOne({ whatsappNumber: number });
     if (!user) {
@@ -323,23 +323,24 @@ export const addTaskFromWhatsapp = async (number, task) => {
     }
     const newTask = new TaskModel({
       user_id: user._id,
-      title: task.title,
-      description: task.description,
-      estTime: task.estTime, // Map estimatedTime to estTime
-      dueDate: task.dueDate,
-      priority: task.priority,
+      title: task.text,
+      description: task.text,
+      // estTime: task.estTime, // Map estimatedTime to estTime
+      dueDate: task.dateTime,
+      // priority: task.priority,
     });
     const savedTask = await newTask.save();
     // Push the task ID into user's `tasks` array
     user.task_id.push(savedTask._id);
     await user.save();
     console.log(`Task added successfully for user: ${user._id}`);
-    return savedTask;
+    // return savedTask;
   } catch (error) {
     console.error(error);
     return null;
   }
 };
+
 export const rescheduleTask = async (req, res) => {
   const { taskID, dueDate } = req.body;
   try {
