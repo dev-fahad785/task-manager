@@ -275,13 +275,13 @@ function Dashboard() {
   // console.log(user)
   return (
     <div className="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen relative ">
-      <InstallPWAButton />
       <LoaderScreen
         status={status}
         errorMessage={errorMsg}
         onClose={handleClose}
       />
       <WebsiteTour />
+      <InstallPWAButton />
       <div className="container mx-auto px-4 py-6">
         {/* Header Section - Improved responsiveness */}
         <Navbar user={user} />
