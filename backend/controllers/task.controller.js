@@ -321,20 +321,31 @@ export const addTaskFromWhatsapp = async (number, task) => {
       console.log(`User not found for number: ${number}`);
       return;
     }
+    let dueDate;
+    // In addTaskFromWhatsapp function:
+    if (task.datetime) {
+      try {
+        dueDate = new Date(task.datetime); // ✅ Convert ISO string to Date object
+        console.log(`✅ Converted: ${task.datetime} → ${dueDate}`);
+      } catch (dateError) {
+        console.log(`❌ Error parsing: ${task.datetime}`);
+        dueDate = new Date();
+      }
+    }
     const newTask = new TaskModel({
       user_id: user._id,
       title: task.text,
       description: task.text,
-      // estTime: task.estTime, // Map estimatedTime to estTime
-      dueDate: task.dateTime,
-      // priority: task.priority,
+      estTime: 30,
+      dueDate: dueDate, // Now using properly parsed Date object
+      priority: "Medium",
     });
+
     const savedTask = await newTask.save();
-    // Push the task ID into user's `tasks` array
     user.task_id.push(savedTask._id);
     await user.save();
     console.log(`Task added successfully for user: ${user._id}`);
-    // return savedTask;
+    return savedTask;
   } catch (error) {
     console.error(error);
     return null;
@@ -350,7 +361,7 @@ export const rescheduleTask = async (req, res) => {
       return;
     }
     task.dueDate = dueDate;
-    task.completionStatus = "Pending"; 
+    task.completionStatus = "Pending";
     await task.save();
     console.log("Task rescheduled successfully");
     return task;
