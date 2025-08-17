@@ -143,7 +143,7 @@
 //     if (tasks2.length > 0) {
 //       console.log("📝 Sample task statuses:", tasks2.map(t => t.completionStatus));
 //     }
-    
+
 //     setActiveFilter(status);
 //     const today = new Date();
 //     const tomorrow = new Date(today);
@@ -375,7 +375,7 @@
 //                       task.completed
 //                         ? "border-gray-200"
 //                         : getPriorityBorderColor(task.priority)
-//                     } 
+//                     }
 //                   shadow hover:shadow-lg transition-all p-4 ${
 //                     task.completed ? "opacity-60" : ""
 //                   }`}
@@ -601,11 +601,11 @@ function Dashboard() {
       );
 
       console.log("Fetched tasks:", response.data.tasks);
-      
+
       // Sort tasks immediately after fetching
       const sortedTasks = sortTasksByDueDate(response.data.tasks);
       setTasks2(sortedTasks);
-      
+
       return sortedTasks;
     } catch (error) {
       console.error("Error fetching tasks:", error);
@@ -618,7 +618,7 @@ function Dashboard() {
     if (!tasksToSort || tasksToSort.length === 0) return [];
 
     const now = new Date();
-    
+
     return [...tasksToSort].sort((a, b) => {
       const dueDateA = new Date(a.dueDate);
       const dueDateB = new Date(b.dueDate);
@@ -629,64 +629,72 @@ function Dashboard() {
   };
 
   // Filter tasks by completion status - fixed case sensitivity and logic
-  const filterTaskByCompletionStatus = useCallback((filterStatus) => {
-    console.log("🔄 Tab clicked:", filterStatus);
-    console.log("📊 Available tasks:", tasks2.length);
-    
-    setActiveFilter(filterStatus);
-    
-    if (tasks2.length === 0) {
-      setFilteredTasks([]);
-      return;
-    }
+  const filterTaskByCompletionStatus = useCallback(
+    (filterStatus) => {
+      console.log("🔄 Tab clicked:", filterStatus);
+      console.log("📊 Available tasks:", tasks2.length);
 
-    const today = new Date();
-    const tomorrow = new Date(today);
-    tomorrow.setDate(today.getDate() + 1);
+      setActiveFilter(filterStatus);
 
-    const getDateOnly = (date) =>
-      new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
-
-    const filtered = tasks2.filter((task) => {
-      const taskDate = new Date(task.dueDate);
-      const taskDay = getDateOnly(taskDate);
-      const todayDay = getDateOnly(today);
-      const tomorrowDay = getDateOnly(tomorrow);
-
-      // Fixed case sensitivity - your DB uses "Pending" not "pending"
-      if (filterStatus === "Pending") {
-        return task.completionStatus === "Pending" && taskDay === todayDay;
+      if (tasks2.length === 0) {
+        setFilteredTasks([]);
+        return;
       }
 
-      if (filterStatus === "Tomorrow") {
-        return task.completionStatus === "Pending" && taskDay === tomorrowDay;
-      }
+      const today = new Date();
+      const tomorrow = new Date(today);
+      tomorrow.setDate(today.getDate() + 1);
 
-      if (filterStatus === "late") {
-        return task.completionStatus === "Pending" && taskDay > tomorrowDay;
-      }
+      const getDateOnly = (date) =>
+        new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
 
-      if (filterStatus === "Completed") {
-        return task.completionStatus === "Completed";
-      }
-      
-      if (filterStatus === "Overdue") {
-        return (task.completionStatus === "Overdue" || 
-                (task.completionStatus === "Pending" && taskDay < todayDay));
-      }
+      const filtered = tasks2.filter((task) => {
+        const taskDate = new Date(task.dueDate);
+        const taskDay = getDateOnly(taskDate);
+        const todayDay = getDateOnly(today);
+        const tomorrowDay = getDateOnly(tomorrow);
 
-      return false;
-    });
+        // Fixed case sensitivity - your DB uses "Pending" not "pending"
+        if (filterStatus === "Pending") {
+          return task.completionStatus === "Pending" && taskDay === todayDay;
+        }
 
-    console.log("✅ Filtered tasks:", filtered.length);
-    console.log("📝 Sample filtered tasks:", filtered.map(t => ({ 
-      title: t.title, 
-      status: t.completionStatus, 
-      dueDate: t.dueDate 
-    })));
-    
-    setFilteredTasks(filtered);
-  }, [tasks2]);
+        if (filterStatus === "Tomorrow") {
+          return task.completionStatus === "Pending" && taskDay === tomorrowDay;
+        }
+
+        if (filterStatus === "late") {
+          return task.completionStatus === "Pending" && taskDay > tomorrowDay;
+        }
+
+        if (filterStatus === "Completed") {
+          return task.completionStatus === "Completed";
+        }
+
+        if (filterStatus === "Overdue") {
+          return (
+            task.completionStatus === "Overdue" ||
+            (task.completionStatus === "Pending" && taskDay < todayDay)
+          );
+        }
+
+        return false;
+      });
+
+      console.log("✅ Filtered tasks:", filtered.length);
+      console.log(
+        "📝 Sample filtered tasks:",
+        filtered.map((t) => ({
+          title: t.title,
+          status: t.completionStatus,
+          dueDate: t.dueDate,
+        }))
+      );
+
+      setFilteredTasks(filtered);
+    },
+    [tasks2]
+  );
 
   // Load tasks on mount
   useEffect(() => {
@@ -720,6 +728,7 @@ function Dashboard() {
       setStatus("success");
       window.location.reload();
     } catch (error) {
+      console.log(error);
       setStatus("error");
       setErrorMsg("Error while deleting the Task");
     }
@@ -751,6 +760,7 @@ function Dashboard() {
       console.log("Updated successfully");
       window.location.reload();
     } catch (error) {
+      console.log(error);
       setStatus("error");
       setErrorMsg("error occured while updating the task");
     }
@@ -864,7 +874,7 @@ function Dashboard() {
             </h2>
             <AiSuggestion />
           </div>
-          
+
           <div className="lg:col-span-3">
             <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 mb-6">
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
