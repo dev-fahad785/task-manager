@@ -6,7 +6,7 @@ import User from './models/user.model.js';
 import { addWhatsappSubscriber, removeWhatsappSubscriber } from './controllers/user.controller.js';
 import { getTodaysTasks, getTomrrowsTasks, getUpcomingTasks, getAllTasks, sendReminderForAllUsers, productivityReport } from './whatsappBot/whatsappBot.controller.js';
 import {runWitTest}from './wit.js'
-import { addTaskFromWhatsapp } from './controllers/task.controller.js';
+import { addTaskFromWhatsapp } from './utils/taskUtils.js';
 // Store registered users and their attempt counts
 const registeredUsers = new Set();
 const userAttempts = new Map(); // Track failed attempts per user
@@ -150,34 +150,25 @@ client.on('ready', async () => {
 
 // Enhanced menu function
 const sendMenu = async (chatId) => {
-  const menuText = `
-🎯 *Welcome to TaskAI Studio Bot*
+  const menuText = `*TaskAI Studio - Main Menu*
 
-*What would you like to do today?*
+*TASKS*
+*1* - Today's Tasks
+*2* - Tomorrow's Tasks
+*3* - Upcoming Tasks
+*4* - All Tasks
 
-*📋 TASKS*
-*1* - 📊 Today's Tasks
-*2* - 📅 Tomorrow's Tasks  
-*3* - 🔮 Upcoming Tasks
-*4* - 📚 All Tasks
+*INSIGHTS*
+*5* - Productivity Report
+*6* - Analytics
 
-*📊 INSIGHTS*
-*5* - 📈 Productivity Report
-*6* - 📊 Analytics Dashboard
+*SUPPORT*
+*7* - Add Task
+*8* - Feedback
+*9* - Contact
 
-*🛠️ SUPPORT*
-*7* - 🆘 Add Task 
-*8* - 💬 Send Feedback
-*9* - 🌐 Social Media
-
-*0* -  🔄 Show this menu again
-
-❌ Type "LOGOUT" to disconnect your WhatsApp account.
-
-*🎯 Simply reply with a number (0-9) to get started!*
-
-_💡 Tip: You can type "menu" or "help" anytime to see this menu_
-  `;
+*0* - Main Menu
+Type "LOGOUT" to disconnect.`;
 
   await sendMessageWithDelay(chatId, menuText);
 };
@@ -227,193 +218,146 @@ const handleMenuSelection = async (chatId, selection, userName, number) => {
       case '0':
         await sendMenu(chatId);
         return;
-//today's tasks
       case '1':
         try {
           const { todaysTasks } = await getTodaysTasks(number);
 
           if (!todaysTasks || todaysTasks.length === 0) {
-            responseMessage = `📅 *Today's Tasks*
+            responseMessage = `*Today's Tasks*
 
-Hello ${userName}! 👋
+No tasks scheduled for today.
 
-🤔 No tasks scheduled for today. Enjoy your free time!
-
-*What you can do:*
-• 🌐 Visit *www.taskai.studio* to add new tasks
-• 📱 Plan tomorrow's schedule
-• 📊 Check your productivity report (option 5)
-
-📌 Type *0* to return to the main menu.`;
+Visit www.taskai.studio to add tasks.
+Type *0* for main menu.`;
           } else {
             const todaysTaskList = todaysTasks
-              .map((task, index) => `${index + 1}. ✅ ${task.title}\n   📅 Due: ${new Date(task.dueDate).toLocaleDateString()}`)
+              .map((task, index) => `${index + 1}. ${task.title}\n   Due: ${new Date(task.dueDate).toLocaleDateString()}`)
               .join('\n\n');
 
-            responseMessage = `📊 *Today's Tasks*
+            responseMessage = `*Today's Tasks*
 
-Hello ${userName}! 👋
-✅ *Status:* Connected & Active  
-📱 *Last Sync:* ${new Date().toLocaleString()}
-
-📝 *Your tasks for today:*
 ${todaysTaskList}
 
-🌐 *Manage Tasks:* www.taskai.studio
-📌 Type *0* for main menu`;
+Manage at: www.taskai.studio
+Type *0* for main menu.`;
           }
         } catch (error) {
           console.error('Error fetching today\'s tasks:', error);
-          responseMessage = `❌ *Oops! Something went wrong*
+          responseMessage = `*Error*
 
-Unable to fetch today's tasks right now. This might be a temporary issue.
+Unable to fetch today's tasks.
+Please try again later.
 
-*Please try:*
-• Wait a moment and try again
-• Check option *7* for technical support
-• Visit www.taskai.studio directly
-
-📌 Type *0* to return to main menu.`;
+Type *0* for main menu.`;
         }
         break;
-//tomorrow's tasks
       case '2':
         try {
           const { tomorrowsTasks } = await getTomrrowsTasks(number);
 
           if (!tomorrowsTasks || tomorrowsTasks.length === 0) {
-            responseMessage = `📅 *Tomorrow's Tasks*
+            responseMessage = `*Tomorrow's Tasks*
 
-Hello ${userName}! 👋
+No tasks scheduled for tomorrow.
 
-🌅 Tomorrow looks free! Perfect time to plan ahead.
-
-*Suggestions:*
-• 🌐 Add tasks at *www.taskai.studio*
-• 📋 Review your upcoming tasks (option 3)
-• 🎯 Set new goals
-
-📌 Type *0* to return to main menu.`;
+Visit www.taskai.studio to add tasks.
+Type *0* for main menu.`;
           } else {
             const tomorrowsTaskList = tomorrowsTasks
-              .map((task, index) => `${index + 1}. 📋 ${task.title}\n   📅 Due: ${new Date(task.dueDate).toLocaleDateString()}`)
+              .map((task, index) => `${index + 1}. ${task.title}\n   Due: ${new Date(task.dueDate).toLocaleDateString()}`)
               .join('\n\n');
 
-            responseMessage = `📅 *Tomorrow's Tasks*
+            responseMessage = `*Tomorrow's Tasks*
 
-Hello ${userName}! 👋
-
-🌅 *Your tasks for tomorrow:*
 ${tomorrowsTaskList}
 
-🌐 *Manage Tasks:* www.taskai.studio
-📌 Type *0* for main menu`;
+Manage at: www.taskai.studio
+Type *0* for main menu.`;
           }
         } catch (error) {
           console.error('Error fetching tomorrow\'s tasks:', error);
-          responseMessage = `❌ *Unable to load tomorrow's tasks*
+          responseMessage = `*Error*
 
-Please try again in a moment or contact support.
+Unable to load tomorrow's tasks.
+Please try again later.
 
-📌 Type *0* to return to main menu.`;
+Type *0* for main menu.`;
         }
         break;
-//upcoming tasks
       case '3':
         try {
           const { upcomingTasks } = await getUpcomingTasks(number);
 
           if (!upcomingTasks || upcomingTasks.length === 0) {
-            responseMessage = `🔮 *Upcoming Tasks*
+            responseMessage = `*Upcoming Tasks*
 
-Hello ${userName}! 👋
+No upcoming tasks found.
 
-🎉 Your schedule looks clear ahead! Time to plan something exciting.
-
-*Ideas:*
-• 🌐 Visit *www.taskai.studio* to add future tasks
-• 📊 Check your productivity report (option 5)
-• 🎯 Set long-term goals
-
-📌 Type *0* to return to main menu.`;
+Visit www.taskai.studio to add tasks.
+Type *0* for main menu.`;
           } else {
             const upcomingTaskList = upcomingTasks
-              .map((task, index) => `${index + 1}. 🔮 ${task.title}\n   📅 Due: ${new Date(task.dueDate).toLocaleDateString()}`)
+              .map((task, index) => `${index + 1}. ${task.title}\n   Due: ${new Date(task.dueDate).toLocaleDateString()}`)
               .join('\n\n');
 
-            responseMessage = `🔮 *Upcoming Tasks*
+            responseMessage = `*Upcoming Tasks*
 
-Hello ${userName}! 👋
-
-📋 *Tasks coming up:*
 ${upcomingTaskList}
 
-🌐 *Manage Tasks:* www.taskai.studio
-📌 Type *0* for main menu`;
+Manage at: www.taskai.studio
+Type *0* for main menu.`;
           }
         } catch (error) {
           console.error('Error fetching upcoming tasks:', error);
-          responseMessage = `❌ *Can't load upcoming tasks right now*
+          responseMessage = `*Error*
 
-Please try again later or visit www.taskai.studio directly.
+Unable to load upcoming tasks.
+Please try again later.
 
-📌 Type *0* to return to main menu.`;
+Type *0* for main menu.`;
         }
         break;
-// all tasks
       case '4':
         try {
           const { allTasks } = await getAllTasks(number);
 
           if (!allTasks || allTasks.length === 0) {
-            responseMessage = `📚 *All Tasks*
+            responseMessage = `*All Tasks*
 
-Hello ${userName}! 👋
+No tasks found.
 
-🎯 Ready to get started? You haven't added any tasks yet!
-
-*Get Started:*
-• 🌐 Visit *www.taskai.studio* to create your first task
-• 📱 Set up your productivity goals
-• 🔔 Enable reminders
-
-📌 Type *0* to return to main menu.`;
+Visit www.taskai.studio to create tasks.
+Type *0* for main menu.`;
           } else {
             const taskList = allTasks
-              .slice(0, 10) // Limit to first 10 tasks to avoid long messages
-              .map((task, index) => `${index + 1}. 📋 ${task.title}\n   📅 ${new Date(task.dueDate).toLocaleDateString()}`)
+              .slice(0, 10)
+              .map((task, index) => `${index + 1}. ${task.title}\n   ${new Date(task.dueDate).toLocaleDateString()}`)
               .join('\n\n');
 
             const totalCount = allTasks.length;
             const showingCount = Math.min(10, totalCount);
 
-            responseMessage = `📚 *All Tasks*
+            responseMessage = `*All Tasks*
 
-Hello ${userName}! 👋
-
-📊 *Showing ${showingCount} of ${totalCount} tasks:*
+Showing ${showingCount} of ${totalCount} tasks:
 
 ${taskList}
 
-${totalCount > 10 ? `\n*And ${totalCount - 10} more tasks...*` : ''}
+${totalCount > 10 ? `\n+ ${totalCount - 10} more tasks` : ''}
 
-🌐 *Full List:* www.taskai.studio
-📌 Type *0* for main menu`;
+Full list: www.taskai.studio
+Type *0* for main menu.`;
           }
         } catch (error) {
           console.error('Error fetching all tasks:', error);
-          responseMessage = `❌ *Unable to load your tasks*
+          responseMessage = `*Error*
 
-Something went wrong while fetching your task list.
+Unable to load tasks.
 
-*Try:*
-• Option *7* for technical support
-• Visit www.taskai.studio directly
-
-📌 Type *0* to return to main menu.`;
+Visit www.taskai.studio directly.
+Type *0* for main menu.`;
         }
         break;
-// productivity report
       case '5':
         try {
           const { report } = await productivityReport(number);
@@ -421,149 +365,78 @@ Something went wrong while fetching your task list.
           const completionPercentage = report.totalTasks > 0 ?
             Math.round((report.completedTasks / report.totalTasks) * 100) : 0;
 
-          const getMotivationalMessage = (percentage) => {
-            if (percentage >= 80) return "🏆 Outstanding! You're crushing it!";
-            if (percentage >= 60) return "💪 Great progress! Keep it up!";
-            if (percentage >= 40) return "📈 You're getting there! Stay focused!";
-            if (percentage >= 20) return "🎯 Good start! Let's build momentum!";
-            return "🚀 Every journey starts with a single step!";
-          };
+          responseMessage = `*Productivity Report*
 
-          responseMessage = `📈 *Your Productivity Report*
+Total Tasks: ${report.totalTasks}
+Completed: ${report.completedTasks}
+Pending: ${report.pendingTasks}
+Overdue: ${report.overDueTasks}
 
-Hello ${userName}! 👋
+Completion Rate: ${completionPercentage}%
 
-📊 *Task Overview:*
-• 📝 Total Tasks: ${report.totalTasks}
-• ✅ Completed: ${report.completedTasks}
-• ⏳ Pending: ${report.pendingTasks}
-• ⚠️ Overdue: ${report.overDueTasks}
-
-📈 *Performance:*
-• 🎯 Completion Rate: ${completionPercentage}%
-• ⏳ Pending Rate: ${report.pendingRate}
-• ⚠️ Overdue Rate: ${report.overDueRate}
-
-${getMotivationalMessage(completionPercentage)}
-
-🌐 *Detailed Analytics:* www.taskai.studio
-📌 Type *0* for main menu`;
+Detailed analytics: www.taskai.studio
+Type *0* for main menu.`;
 
         } catch (error) {
           console.error('Error fetching productivity report:', error);
-          responseMessage = `❌ *Report Temporarily Unavailable*
+          responseMessage = `*Error*
 
-We're having trouble generating your productivity report right now.
+Report unavailable. Try again later.
 
-*Alternative:*
-• Try again in a few minutes
-• Visit www.taskai.studio for full analytics
-• Contact support (option 7)
-
-📌 Type *0* to return to main menu.`;
+Visit www.taskai.studio for analytics.
+Type *0* for main menu.`;
         }
         break;
-//analytics dashboard
       case '6':
-        responseMessage = `📊 *Analytics Dashboard*
+        responseMessage = `*Analytics Dashboard*
 
-Hello ${userName}! 👋
+Status: Connected & Active
+Response Time: Instant
+Notifications: Enabled
 
-📈 *Quick Stats:*
-• 📱 WhatsApp: Connected & Active
-• ⚡ Response Time: Instant
-• 🔔 Notifications: Enabled
-• 📅 Active Since: ${new Date().toLocaleDateString()}
+Detailed analytics: www.taskai.studio
 
-*🌐 For detailed analytics visit:*
-www.taskai.studio
-
-*Features Available:*
-• 📊 Performance graphs
-• 📅 Daily/weekly/monthly views
-• 🎯 Goal tracking
-• 📈 Progress trends
-
-📌 Type *0* for main menu`;
+Type *0* for main menu.`;
         break;
-// add tasks
       case '7':
-        // Set user state to waiting for task input
         waitingForTaskInput.add(number);
         
-        responseMessage = `🤖 *AI Task Parser*
+        responseMessage = `*AI Task Parser*
 
-Hello ${userName}! 👋
+Please describe your task:
 
-📝 *Please type your task below:*
-
-*Examples:*
-• "Task / deadline / priority"
-• "Buy groceries today 6pm  high priority"
+Examples:
+• "Buy groceries today 6pm high priority"
 • "Submit report by Friday urgent"
 
-
-*Type your task now:* 👇`;
+Type your task below:`;
         break;
-//feedback
       case '8':
-        responseMessage = `💬 *We Value Your Feedback!*
+        responseMessage = `*Feedback*
 
-Hello ${userName}! 👋
-
-*⭐ How are we doing?*
-Your opinion helps us improve!
-
-*📝 Share Your Thoughts:*
-• ⭐ Rate our service (1-5 stars)
-• 💡 Suggest new features
-• 🐛 Report any bugs
-• 💭 General feedback
-
-*📧 Send feedback to:*
+Share your thoughts:
 taskai.studio@gmail.com
 
-*🌐 Or use our website:*
-www.taskai.studio/feedback
+Or visit: www.taskai.studio/feedback
 
-Thank you for helping us grow! 🙏
-
-📌 Type *0* for main menu`;
+Type *0* for main menu.`;
         break;
-//contact us
       case '9':
-        responseMessage = `🌐 *Connect With Us!*
+        responseMessage = `*Connect With Us*
 
-Hello ${userName}! 👋
+TikTok: https://www.tiktok.com/@taskai.studio
+LinkedIn: https://www.linkedin.com/company/taskai-studio
+Twitter: https://twitter.com/taskai_studio
+Instagram: https://www.instagram.com/taskai.studio
 
-*📱 Follow TaskAI Studio:*
-
-🎵 *TikTok:* https://www.tiktok.com/@taskai.studio
-📘 *LinkedIn:* https://www.linkedin.com/company/taskai-studio
-🐦 *Twitter:* https://twitter.com/taskai_studio
-📸 *Instagram:* https://www.instagram.com/taskai.studio
-
-*🌟 Join our community for:*
-• 📚 Productivity tips
-• 🚀 New feature announcements
-• 💡 Success stories
-• 🎯 Motivation & inspiration
-
-📌 Type *0* for main menu`;
+Type *0* for main menu.`;
         break;
-//default
       default:
-        responseMessage = `❓ *Invalid Selection*
+        responseMessage = `*Invalid Selection*
 
-Hello ${userName}! 👋
+Please choose a number from 0-9.
 
-Please choose a number from *0-9* to continue.
-
-*💡 Quick Help:*
-• Type *0* to see the menu
-• Type *menu* or *help* anytime
-
-📌 Let's try again! What would you like to do?`;
+Type *0* for menu or *help*.`;
         break;
     }
 
@@ -571,11 +444,11 @@ Please choose a number from *0-9* to continue.
 
   } catch (error) {
     console.error('Error in handleMenuSelection:', error);
-    await sendMessageWithDelay(chatId, `❌ *Something went wrong*
+    await sendMessageWithDelay(chatId, `*Error*
 
-Please try again or contact support if the issue persists.
+Something went wrong. Please try again.
 
-📌 Type *0* to return to main menu.`);
+Type *0* for main menu.`);
   }
 };
 
@@ -592,15 +465,19 @@ client.on('message', async (message) => {
   console.log(`📨 ${number}: ${content}`);
 
   // Check if user is temporarily blocked
-  if (isUserBlocked(number)) {
-    const attempts = userAttempts.get(number);
-    const timeLeft = Math.ceil((BLOCK_DURATION - (Date.now() - attempts.lastAttempt)) / 60000);
+    if (isUserBlocked(number)) {
+      const attempts = userAttempts.get(number);
+      const timeLeft = Math.ceil((BLOCK_DURATION - (Date.now() - attempts.lastAttempt)) / 60000);
 
-    await sendMessageWithDelay(message.from,
-      `🚫 *Too Many Failed Attempts*\n\nPlease wait ${timeLeft} minutes before trying again.\n\n💡 *Need help?* Contact support at taskai.studio@gmail.com`
-    );
-    return;
-  }
+      await sendMessageWithDelay(message.from,
+        `*Too Many Failed Attempts*
+
+Please wait ${timeLeft} minutes before trying again.
+
+Contact: taskai.studio@gmail.com`
+      );
+      return;
+    }
 
   const isRegistered = registeredUsers.has(number);
 
@@ -622,7 +499,11 @@ client.on('message', async (message) => {
           registeredUsers.add(number);
 
           await sendMessageWithDelay(message.from,
-            `🎉 *Welcome to TaskAI Studio!*\n\nHello ${user.name || 'Friend'}! 👋\n\n✅ Successfully connected to WhatsApp!\n🔔 You'll now receive task reminders\n📱 Access all features through this chat\n\n*Let me show you what you can do...*`
+            `*Welcome to TaskAI Studio*
+
+Successfully connected!
+
+You'll now receive task reminders.`
           );
 
           // Send menu after a brief delay
@@ -635,28 +516,38 @@ client.on('message', async (message) => {
           recordFailedAttempt(number);
           const remaining = getRemainingAttempts(number);
 
-          let errorMsg = `❌ *Connection Failed*\n\n`;
+          let errorMsg = `*Connection Failed*
+
+`;
 
           if (err.message.includes('not found') || err.message.includes('invalid')) {
-            errorMsg += `🔑 Invalid secret code. Please check and try again.\n\n`;
+            errorMsg += `Invalid secret code. Please check and try again.
+
+`;
           } else {
-            errorMsg += `⚠️ Unable to connect right now. Please try again.\n\n`;
+            errorMsg += `Unable to connect. Please try again.
+
+`;
           }
 
-          errorMsg += `*Format:* secret code: your-24-digit-code\n`;
-          errorMsg += `*Example:* secret code: 507f1f77bcf86cd799439011\n\n`;
+          errorMsg += `Format: secret code: your-24-digit-code
+Example: secret code: 507f1f77bcf86cd799439011
+
+`;
 
           if (remaining > 0) {
-            errorMsg += `⏳ ${remaining} attempts remaining`;
+            errorMsg += `${remaining} attempts remaining`;
           } else {
-            errorMsg += `🚫 No more attempts. Please wait 10 minutes.`;
+            errorMsg += `No more attempts. Please wait 10 minutes.`;
           }
 
           await sendMessageWithDelay(message.from, errorMsg);
         }
       } else {
         // Secret code format is altered
-        await sendMessageWithDelay(message.from, `🔑 *Secret code altered, try again*`);
+        await sendMessageWithDelay(message.from, `*Secret code format incorrect*
+
+Please try again.`);
       }
     }
     // Bot will NOT respond to any other messages from unregistered users
@@ -667,7 +558,14 @@ client.on('message', async (message) => {
     if (contentLower === 'logout' || contentLower === 'disconnect') {
       pendingConfirmations.add(number);
       await sendMessageWithDelay(message.from,
-        `🚪 *Logout Confirmation*\n\nAre you sure you want to disconnect from TaskAI Studio?\n\n• You'll stop receiving reminders\n• You'll need your secret code to reconnect\n\nType *confirm* to logout or *0* to return to menu.`
+        `*Logout Confirmation*
+
+Are you sure you want to disconnect from TaskAI Studio?
+
+• You'll stop receiving reminders
+• You'll need your secret code to reconnect
+
+Type *confirm* to logout or *0* to return to menu.`
       );
 
     } else if (contentLower === 'confirm') {
@@ -677,17 +575,30 @@ client.on('message', async (message) => {
         pendingConfirmations.delete(number);
         console.log(`🔌 User ${number} logged out successfully`);
         await sendMessageWithDelay(message.from,
-          `👋 *Successfully Logged Out*\n\nThank you for using TaskAI Studio!\n\n*To reconnect anytime:*\nsecret code: your-24-digit-code\n\n*Stay productive!* 🎯\nwww.taskai.studio`
+          `*Successfully Logged Out*
+
+Thank you for using TaskAI Studio!
+
+To reconnect anytime:
+secret code: your-24-digit-code
+
+www.taskai.studio`
         );
       } else {
         await sendMessageWithDelay(message.from,
-          `⚠️ *Logout not initiated*\n\nPlease type *logout* or *disconnect* first to confirm logout.`
+          `*Logout not initiated*
+
+Please type *logout* or *disconnect* first.`
         );
       }
 
     } else if (/^secret code\s*:\s*\w+/i.test(content)) {
       await sendMessageWithDelay(message.from,
-        `ℹ️ *Already Connected*\n\nYou are already connected to TaskAI Studio.\n\nIf you want to switch accounts, type *logout* first.`
+        `*Already Connected*
+
+You are already connected to TaskAI Studio.
+
+To switch accounts, type *logout* first.`
       );
 
     } else if (content >= '0' && content <= '9' && content.length === 1) {
@@ -708,37 +619,31 @@ client.on('message', async (message) => {
           console.log('Wit AI result:', witres);
           addTaskFromWhatsapp(number,witres)
           
-          await sendMessageWithDelay(message.from, `🤖 *AI Task Analysis Complete*
+          await sendMessageWithDelay(message.from, `*AI Task Analysis Complete*
 
-*Your Task:* "${content}"
+Task: "${content}"
 
-*🔍 AI Analysis Results:*
-• 🎯 Intent: ${witres.intent || 'Not detected'}
-• 📅 Date/Time: ${witres.datetime || 'Not specified'}  
-• ⭐ Priority: ${witres.priority || 'Not specified'}
-• 📋 Task Type: ${witres.taskType || 'General task'}
+AI Analysis Results:
+• Intent: ${witres.intent || 'Not detected'}
+• Date/Time: ${witres.datetime || 'Not specified'}  
+• Priority: ${witres.priority || 'Not specified'}
 
-*💡 Tips:*
-• Visit www.taskai.studio to save this task
-• Add more details for better AI recognition
+Visit www.taskai.studio to save this task.
 
-📌 Type *0* for main menu or *7* to analyze another task`);
+Type *0* for main menu or *7* for another task.`);
           return; // Exit early to prevent other message handling
           
         } catch (error) {
           console.error('Error with Wit AI analysis:', error);
-          await sendMessageWithDelay(message.from, `❌ *AI Analysis Failed*
+          await sendMessageWithDelay(message.from, `*AI Analysis Failed*
 
-Sorry, I couldn't analyze your task right now.
+Could not analyze your task: "${content}"
 
-*Your Task:* "${content}"
-
-*Please try:*
-• Try again with option *7*
+Please try:
+• Option *7* to try again
 • Visit www.taskai.studio to add manually
-• Contact support if issue persists
 
-📌 Type *0* for main menu`);
+Type *0* for main menu.`);
           }
         }
       }

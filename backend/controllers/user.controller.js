@@ -94,7 +94,6 @@ export const loginUser = async (req, res) => {
     }
 };
 
-
 export const createGuestUser = async (req, res) => {
     try {
         // Generate simple unique ID using timestamp + random number
@@ -153,7 +152,6 @@ export const getAllUsers = async (req, res) => {
         res.status(500).json({ message: "Server error", error: error.message });
     }
 }
-
 
 export const addWhatsappSubscriber = async (userID, whatsappNumber) => {
     try {
