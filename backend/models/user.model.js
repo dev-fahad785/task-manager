@@ -47,6 +47,16 @@ const userSchema = mongoose.Schema({
     whatsappNumber: {
         type: String,
         required: false,
+    },
+    timezone: {
+        type: String,
+        required: false,
+        default: 'UTC', // Default to UTC if not specified
+    },
+    // Store user's approximate location for timezone detection
+    location: {
+        country: { type: String, required: false },
+        city: { type: String, required: false },
     }
 
 

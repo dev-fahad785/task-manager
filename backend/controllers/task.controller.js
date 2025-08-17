@@ -1,5 +1,6 @@
 import TaskModel from "../models/task.model.js";
 import UserModel from "../models/user.model.js";
+import { convertWitDateToUserTimezone, parseRelativeTimeInTimezone } from '../utils/timezoneUtils.js';
 
 export const getUserTasks = async (userID) => {
   try {
@@ -321,12 +322,47 @@ export const addTaskFromWhatsapp = async (number, task) => {
       return;
     }
 
+    // Get user's timezone (fallback to UTC if not set)
+    const userTimezone = user.timezone || 'UTC';
+    console.log(`🌍 User's timezone: ${userTimezone}`);
+    
+    // Smart datetime handling
+    let finalDateTime = task.datetime;
+    
+    if (task.datetime) {
+      // Check if the original message contains relative time phrases
+      const originalText = task.text.toLowerCase();
+      const hasRelativeTime = originalText.includes('today') || 
+                             originalText.includes('tomorrow') || 
+                             originalText.includes('tonight') ||
+                             originalText.includes('morning') ||
+                             originalText.includes('afternoon') ||
+                             originalText.includes('evening');
+      
+      if (hasRelativeTime) {
+        // For relative times, parse directly in user's timezone
+        console.log(`📅 Detected relative time in message: "${task.text}"`);
+        finalDateTime = parseRelativeTimeInTimezone(task.text, userTimezone);
+        console.log(`📅 Parsed in user timezone: ${finalDateTime}`);
+      } else {
+        // For absolute dates/times, convert from Wit.ai timezone to user timezone
+        finalDateTime = convertWitDateToUserTimezone(task.datetime, userTimezone);
+        console.log(`📅 Original datetime: ${task.datetime}`);
+        console.log(`📅 Converted datetime: ${finalDateTime}`);
+      }
+    } else {
+      // If no specific datetime, try to parse relative time from the original text
+      const relativeTime = parseRelativeTimeInTimezone(task.text, userTimezone);
+      finalDateTime = relativeTime;
+      console.log(`📅 Parsed relative time: ${finalDateTime}`);
+    }
+
     const newTask = new TaskModel({
       user_id: user._id,
       title: task.text,
       description: task.text,
       estTime: 30,
-      dueDate: task.datetime,
+      dueDate: finalDateTime,
       priority: task.priority, 
     });
 

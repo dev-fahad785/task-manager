@@ -2,6 +2,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import UserModel from '../models/user.model.js';
 import User from '../models/user.model.js';
+import { detectTimezoneFromPhone, getUserTimeInfo } from '../utils/timezoneUtils.js';
 
 export const registerUser = async (req, res) => {
     try {
@@ -155,12 +156,21 @@ export const getAllUsers = async (req, res) => {
 
 
 export const addWhatsappSubscriber = async (userID, whatsappNumber) => {
-
-
     try {
+        // Auto-detect timezone from phone number
+        const detectedTimezone = detectTimezoneFromPhone(whatsappNumber);
+        const timeInfo = getUserTimeInfo(detectedTimezone);
+        
+        console.log(`🌍 Auto-detected timezone for ${whatsappNumber}:`);
+        console.log(`   Timezone: ${detectedTimezone}`);
+        console.log(`   Local time: ${timeInfo.localTime}`);
+        
         const user = await UserModel.findByIdAndUpdate(
             userID,
-            { whatsappNumber },
+            { 
+                whatsappNumber,
+                timezone: detectedTimezone
+            },
             { new: true }
         );
 
