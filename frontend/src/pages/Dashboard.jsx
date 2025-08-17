@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import LoaderScreen from "../components/Loader";
 import { Link, useNavigate } from "react-router-dom";
@@ -9,7 +9,6 @@ import InstallPWAButton from "../components/InstallPWA";
 
 function Dashboard() {
   const navigate = useNavigate();
-  const [tasks, setTasks] = useState([]); //to store all the tasks which are unsorted
   const [tasks2, setTasks2] = useState([]); // it will store all the tasks in sorted by their due date.
   // const [updatedTask, setUpdateTask] = useState() // store the updated task data
   const [filteredTask, setFilteredTasks] = useState([]); // filter teh tasks for today,tomorrow and upcoming and completed
@@ -17,7 +16,6 @@ function Dashboard() {
 
   const [status, setStatus] = useState("idle");
   const [errorMsg, setErrorMsg] = useState("");
-  const [successMsg, setSuccessMsg] = useState("");
 
   const handleClose = () => {
     setStatus("idle");
@@ -33,7 +31,7 @@ function Dashboard() {
   const token = localStorage.getItem("token");
   console.log("token", token);
   // get all the user tasks from the db
-  const getAllUserTasks = async () => {
+  const getAllUserTasks = useCallback(async () => {
     try {
       const response = await axios.get(
         `${import.meta.env.VITE_BACKEND_URL}/task/getAllTasks/${userID}`,
@@ -45,7 +43,6 @@ function Dashboard() {
         }
       );
 
-      setTasks(response.data.tasks);
       console.log(response.data);
       console.log("unsorted ", response.data.tasks);
       setTasks2(response.data.tasks);
@@ -54,16 +51,16 @@ function Dashboard() {
       console.error("Error fetching tasks:", error);
       throw error;
     }
-  };
+  }, [userID, token]);
 
   // Fix useEffect dependency
   useEffect(() => {
     if (userID) {
       getAllUserTasks();
     }
-  }, [userID]);
+  }, [userID, getAllUserTasks]);
 
-  const sortTasksByDueDate = () => {
+  const sortTasksByDueDate = useCallback(() => {
     console.log("entered the sorting func");
     if (!tasks2 || tasks2.length === 0) return; // Guard clause
 
@@ -72,6 +69,7 @@ function Dashboard() {
 
     // Create a new array instead of mutating the original
     const sortedTasks = [...tasks2].sort((a, b) => {
+      // Handle string dates from database
       const dueDateA = new Date(a.dueDate);
       const dueDateB = new Date(b.dueDate);
 
@@ -84,7 +82,7 @@ function Dashboard() {
 
     setTasks2(sortedTasks);
     console.log(sortedTasks);
-  };
+  }, [tasks2]);
 
   const deleteTask = async (taskID) => {
     setStatus("loading");
@@ -99,10 +97,10 @@ function Dashboard() {
       );
       console.log(response.data);
       setStatus("success");
-      setSuccessMsg(response.data.message);
+      console.log(response.data.message);
       window.location.reload();
     } catch (error) {
-      setStatus("error");
+      setStatus("error",error);
       setErrorMsg("Error while deleting the Task");
     }
   };
@@ -131,15 +129,21 @@ function Dashboard() {
         setErrorMsg(response.data.message);
       }
       setStatus("success");
-      setSuccessMsg("Updated successfully");
+      console.log("Updated successfully");
       window.location.reload();
     } catch (error) {
-      setStatus("error");
+      setStatus("error",error);
       setErrorMsg("error occured while updating the task");
     }
   };
 
-  const filterTaskByCompletionStatus = (status) => {
+  const filterTaskByCompletionStatus = useCallback((status) => {
+    console.log("🔄 Tab clicked:", status);
+    console.log("📊 Available tasks:", tasks2.length);
+    if (tasks2.length > 0) {
+      console.log("📝 Sample task statuses:", tasks2.map(t => t.completionStatus));
+    }
+    
     setActiveFilter(status);
     const today = new Date();
     const tomorrow = new Date(today);
@@ -149,6 +153,7 @@ function Dashboard() {
       new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
 
     const filtered = tasks2.filter((task) => {
+      // Handle string dates from database
       const taskDate = new Date(task.dueDate);
       const taskDay = getDateOnly(taskDate);
       const todayDay = getDateOnly(today);
@@ -177,8 +182,9 @@ function Dashboard() {
       return false;
     });
 
+    console.log("✅ Filtered tasks:", filtered.length);
     setFilteredTasks(filtered);
-  };
+  }, [tasks2]);
   // Helper functions
   function getPriorityBorderColor(priority) {
     switch (priority) {
@@ -235,13 +241,13 @@ function Dashboard() {
   }
   useEffect(() => {
     if (tasks2.length > 0) filterTaskByCompletionStatus("Pending");
-  }, [tasks2]);
+  }, [tasks2, filterTaskByCompletionStatus]);
 
   useEffect(() => {
     if (tasks2 && tasks2.length > 0) {
       sortTasksByDueDate();
     }
-  }, [tasks]);
+  }, [tasks2, sortTasksByDueDate]);
   const handleReschedule = async (task) => {
     try {
       // Calculate the new due date which will be today's date

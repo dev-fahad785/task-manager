@@ -61,6 +61,6 @@ export const runWitTest = async (message) => {
     
   } catch (error) {
     console.error("❌ Wit.ai Error:", error.response?.data || error.message);
-    return { text: message, intent: "Error", datetime: null, priority: "Medium" };
+    return { text: message, intent: "Error", datetime: null, priority:"medium" };
   }
 };

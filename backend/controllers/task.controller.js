@@ -320,40 +320,20 @@ export const addTaskFromWhatsapp = async (number, task) => {
       console.log(`User not found for number: ${number}`);
       return;
     }
-    
-    let dueDate = new Date(); // Default fallback
-    
-    if (task.datetime) {
-      try {
-        dueDate = new Date(task.datetime);
-        console.log(`✅ Converted: ${task.datetime} → ${dueDate.toISOString()}`);
-        
-        if (isNaN(dueDate.getTime())) {
-          console.log(`❌ Invalid date: ${task.datetime}, using current date`);
-          dueDate = new Date();
-        }
-      } catch (dateError) {
-        console.log(`❌ Error parsing: ${task.datetime}`, dateError);
-        dueDate = new Date();
-      }
-    } else {
-      console.log("⚠️ No datetime provided, using current date");
-    }
-    
+
     const newTask = new TaskModel({
       user_id: user._id,
       title: task.text,
       description: task.text,
       estTime: 30,
-      dueDate: dueDate,
-      priority: "Medium", // ✅ Use priority from Wit.ai
+      dueDate: task.datetime,
+      priority: task.priority, 
     });
 
     const savedTask = await newTask.save();
+    console.log("saved Task", savedTask);
     user.task_id.push(savedTask._id);
     await user.save();
-    console.log(`✅ Task added successfully for user: ${user._id}`);
-    console.log(`📅 Saved with dueDate: ${savedTask.dueDate}`);
     return savedTask;
   } catch (error) {
     console.error("❌ Error in addTaskFromWhatsapp:", error);
@@ -372,9 +352,13 @@ export const rescheduleTask = async (req, res) => {
     task.completionStatus = "Pending";
     await task.save();
     console.log("✅ Task rescheduled successfully");
-    return res.status(200).json({ message: "Task rescheduled successfully", task });
+    return res
+      .status(200)
+      .json({ message: "Task rescheduled successfully", task });
   } catch (error) {
     console.error("❌ Error rescheduling task:", error);
-    return res.status(500).json({ message: "Error rescheduling task", error: error.message });
+    return res
+      .status(500)
+      .json({ message: "Error rescheduling task", error: error.message });
   }
 };
