@@ -42,7 +42,6 @@ export const getUserTasks = async (userID) => {
     throw error; // Re-throw or return a custom error response
   }
 };
-
 //it will exclude teh completed and overdue tasks and return only the pending tasks
 export const tasksforAIArrangement = async (userID) => {
   try {
@@ -321,33 +320,43 @@ export const addTaskFromWhatsapp = async (number, task) => {
       console.log(`User not found for number: ${number}`);
       return;
     }
-    let dueDate;
-    // In addTaskFromWhatsapp function:
+    
+    let dueDate = new Date(); // Default fallback
+    
     if (task.datetime) {
       try {
-        dueDate = new Date(task.datetime); // ✅ Convert ISO string to Date object
-        console.log(`✅ Converted: ${task.datetime} → ${dueDate}`);
+        dueDate = new Date(task.datetime);
+        console.log(`✅ Converted: ${task.datetime} → ${dueDate.toISOString()}`);
+        
+        if (isNaN(dueDate.getTime())) {
+          console.log(`❌ Invalid date: ${task.datetime}, using current date`);
+          dueDate = new Date();
+        }
       } catch (dateError) {
-        console.log(`❌ Error parsing: ${task.datetime}`);
+        console.log(`❌ Error parsing: ${task.datetime}`, dateError);
         dueDate = new Date();
       }
+    } else {
+      console.log("⚠️ No datetime provided, using current date");
     }
+    
     const newTask = new TaskModel({
       user_id: user._id,
       title: task.text,
       description: task.text,
       estTime: 30,
-      dueDate: dueDate, // Now using properly parsed Date object
-      priority: "Medium",
+      dueDate: dueDate,
+      priority: "Medium", // ✅ Use priority from Wit.ai
     });
 
     const savedTask = await newTask.save();
     user.task_id.push(savedTask._id);
     await user.save();
-    console.log(`Task added successfully for user: ${user._id}`);
+    console.log(`✅ Task added successfully for user: ${user._id}`);
+    console.log(`📅 Saved with dueDate: ${savedTask.dueDate}`);
     return savedTask;
   } catch (error) {
-    console.error(error);
+    console.error("❌ Error in addTaskFromWhatsapp:", error);
     return null;
   }
 };
@@ -357,16 +366,15 @@ export const rescheduleTask = async (req, res) => {
   try {
     const task = await TaskModel.findById(taskID);
     if (!task) {
-      console.log("Task not found");
-      return;
+      return res.status(404).json({ message: "Task not found" });
     }
     task.dueDate = dueDate;
     task.completionStatus = "Pending";
     await task.save();
-    console.log("Task rescheduled successfully");
-    return task;
+    console.log("✅ Task rescheduled successfully");
+    return res.status(200).json({ message: "Task rescheduled successfully", task });
   } catch (error) {
-    console.error("Error rescheduling task:", error);
-    return null;
+    console.error("❌ Error rescheduling task:", error);
+    return res.status(500).json({ message: "Error rescheduling task", error: error.message });
   }
 };

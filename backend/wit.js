@@ -14,7 +14,7 @@ export const runWitTest = async (message) => {
       },
     });
     
-    console.log("Wit AI Response from wit js:", response.data);
+    console.log("🤖 Wit AI Response:", response.data);
     const { intents, entities } = response.data;
 
     const intent = intents?.[0]?.name || "No intent detected";
@@ -26,18 +26,17 @@ export const runWitTest = async (message) => {
     if (datetimeEntity) {
       let isoDate = null;
       
+      console.log("📅 DateTime entity:", datetimeEntity);
+      
       if (datetimeEntity.type === "value") {
-        // Single point in time
         isoDate = datetimeEntity.value;
+        console.log("📅 Single value:", isoDate);
       } else if (datetimeEntity.type === "interval") {
-        // For intervals like "tonight", use the FROM value (start of period)
-        // This gives us 6 PM instead of midnight
-        isoDate = datetimeEntity.from?.value || datetimeEntity.to?.value || null;
-        
-        console.log("📅 Interval detected:");
-        console.log("  From:", datetimeEntity.from?.value);
-        console.log("  To:", datetimeEntity.to?.value);
-        console.log("  Using:", isoDate);
+        // For intervals, use FROM value (start time) instead of TO (end time)
+        isoDate = datetimeEntity.from?.value || datetimeEntity.to?.value;
+        console.log("📅 Interval - From:", datetimeEntity.from?.value);
+        console.log("📅 Interval - To:", datetimeEntity.to?.value);
+        console.log("📅 Using:", isoDate);
       }
 
       if (isoDate) {
@@ -49,23 +48,19 @@ export const runWitTest = async (message) => {
 
     const priority = entities["priority:priority"]?.[0]?.value || "Medium";
 
-    console.log("📋 Parsed result:", {
-      text: message,
-      intent,
-      datetime,
-      datetimeFormatted,
-      priority
-    });
-
-    return { 
+    const result = { 
       text: message, 
       intent, 
       datetime,
       datetimeFormatted,
       priority 
     };
+    
+    console.log("🎯 Final Wit result:", result);
+    return result;
+    
   } catch (error) {
-    console.error("❌ Error:", error.response?.data || error.message);
-    return { text: message, intent: "Error", datetime: null, priority: "Error" };
+    console.error("❌ Wit.ai Error:", error.response?.data || error.message);
+    return { text: message, intent: "Error", datetime: null, priority: "Medium" };
   }
 };
