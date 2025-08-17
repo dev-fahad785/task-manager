@@ -134,9 +134,9 @@ export const convertWitDateToUserTimezone = (witDatetime, userTimezone) => {
     const userDate = witDate.setZone(userTimezone);
     
     console.log(`🔄 Converting datetime:`);
-    console.log(`   Original (LA): ${witDate.toISO()}`);
+    console.log(`   Original (LA): ${witDate.toFormat('MMMM dd, yyyy - h:mm a')} (${witDate.toISO()})`);
     console.log(`   User timezone: ${userTimezone}`);
-    console.log(`   Converted: ${userDate.toISO()}`);
+    console.log(`   Converted: ${userDate.toFormat('MMMM dd, yyyy - h:mm a')} (${userDate.toISO()})`);
     
     return userDate.toISO();
   } catch (error) {
@@ -147,7 +147,7 @@ export const convertWitDateToUserTimezone = (witDatetime, userTimezone) => {
 
 /**
  * Parse relative time phrases in user's timezone
- * Handles: "5pm today", "tomorrow morning", "next monday", etc.
+ * Handles: "5pm today", "tomorrow morning", "day after tomorrow 8am", "23 aug at 7pm", etc.
  */
 export const parseRelativeTimeInTimezone = (timeText, userTimezone = 'UTC') => {
   try {
@@ -157,8 +157,8 @@ export const parseRelativeTimeInTimezone = (timeText, userTimezone = 'UTC') => {
     console.log(`🕐 Parsing "${timeText}" in timezone ${userTimezone}`);
     console.log(`🕐 Current time in ${userTimezone}: ${now.toFormat('MMMM dd, yyyy - h:mm a')}`);
     
-    // Extract time if present (like "5pm", "2:30pm", "14:00", "6pm")
-    const timeMatch = lowerText.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/i);
+    // Extract time if present (like "5pm", "2:30pm", "14:00", "6pm", "8am", "7 pm", "11:30 am")
+    const timeMatch = lowerText.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)/i);
     let hour = null, minute = 0;
     
     if (timeMatch) {
@@ -166,22 +166,98 @@ export const parseRelativeTimeInTimezone = (timeText, userTimezone = 'UTC') => {
       minute = parseInt(timeMatch[2]) || 0;
       const ampm = timeMatch[3]?.toLowerCase();
       
+      console.log(`🕐 Raw extracted: ${hour}:${minute} ${ampm}`);
+      
       // Convert to 24-hour format
-      if (ampm === 'pm' && hour !== 12) hour += 12;
-      if (ampm === 'am' && hour === 12) hour = 0;
+      if (ampm === 'pm' && hour !== 12) {
+        hour += 12;
+      } else if (ampm === 'am' && hour === 12) {
+        hour = 0;
+      }
+      // For AM times (1-11), keep hour as is
+      // For PM times, hour is already converted above
       
       console.log(`🕐 Extracted time: ${hour}:${minute.toString().padStart(2, '0')} (24-hour format)`);
+    }
+    
+    // Extract specific date if present (like "23 aug", "august 23", "23/08")
+    const monthNames = {
+      jan: 1, january: 1,
+      feb: 2, february: 2, 
+      mar: 3, march: 3,
+      apr: 4, april: 4,
+      may: 5,
+      jun: 6, june: 6,
+      jul: 7, july: 7,
+      aug: 8, august: 8,
+      sep: 9, september: 9,
+      oct: 10, october: 10,
+      nov: 11, november: 11,
+      dec: 12, december: 12
+    };
+    
+    // Try different date patterns
+    let specificDay = null, specificMonth = null, specificYear = now.year;
+    
+    // Pattern: "23 aug", "23 august", "23-aug", "19-aug"
+    const dateMatch1 = lowerText.match(/(\d{1,2})[-\s]+(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|january|february|march|april|may|june|july|august|september|october|november|december)/);
+    if (dateMatch1) {
+      specificDay = parseInt(dateMatch1[1]);
+      specificMonth = monthNames[dateMatch1[2]];
+      console.log(`🗓️ Found specific date: Day ${specificDay}, Month ${specificMonth} (pattern 1)`);
+    }
+    
+    // Pattern: "august 23", "aug 23", "aug-23"
+    const dateMatch2 = lowerText.match(/(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|january|february|march|april|may|june|july|august|september|october|november|december)[-\s]+(\d{1,2})/);
+    if (!dateMatch1 && dateMatch2) {
+      specificMonth = monthNames[dateMatch2[1]];
+      specificDay = parseInt(dateMatch2[2]);
+      console.log(`🗓️ Found specific date: Month ${specificMonth}, Day ${specificDay} (pattern 2)`);
+    }
+    
+    // Pattern: "on 19-aug 2025", "19-aug-2025"
+    const dateMatch3 = lowerText.match(/(\d{1,2})[-\s]+(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|january|february|march|april|may|june|july|august|september|october|november|december)[-\s]+(\d{4})/);
+    if (dateMatch3) {
+      specificDay = parseInt(dateMatch3[1]);
+      specificMonth = monthNames[dateMatch3[2]];
+      specificYear = parseInt(dateMatch3[3]);
+      console.log(`🗓️ Found specific date with year: Day ${specificDay}, Month ${specificMonth}, Year ${specificYear} (pattern 3)`);
     }
     
     // Determine the base date
     let baseDate = now;
     
-    if (lowerText.includes('today')) {
+    if (specificDay && specificMonth) {
+      // Use specific date
+      baseDate = DateTime.fromObject({
+        year: specificYear,
+        month: specificMonth,
+        day: specificDay,
+        hour: 0,
+        minute: 0,
+        second: 0,
+        millisecond: 0
+      }, { zone: userTimezone });
+      
+      // If the date is in the past, assume next year
+      if (baseDate < now.startOf('day')) {
+        baseDate = baseDate.plus({ years: 1 });
+        specificYear = baseDate.year;
+      }
+      
+      console.log(`🗓️ Using specific date: ${baseDate.toFormat('MMMM dd, yyyy')} (${userTimezone})`);
+    } else if (lowerText.includes('day after tomorrow')) {
+      baseDate = now.plus({ days: 2 }).startOf('day');
+      console.log(`🕐 Base date: Day after tomorrow (${baseDate.toFormat('MMMM dd, yyyy')})`);
+    } else if (lowerText.includes('today')) {
       baseDate = now.startOf('day');
+      console.log(`🕐 Base date: Today (${baseDate.toFormat('MMMM dd, yyyy')})`);
     } else if (lowerText.includes('tomorrow')) {
       baseDate = now.plus({ days: 1 }).startOf('day');
+      console.log(`🕐 Base date: Tomorrow (${baseDate.toFormat('MMMM dd, yyyy')})`);
     } else if (lowerText.includes('yesterday')) {
       baseDate = now.minus({ days: 1 }).startOf('day');
+      console.log(`🕐 Base date: Yesterday (${baseDate.toFormat('MMMM dd, yyyy')})`);
     } else if (lowerText.includes('tonight')) {
       baseDate = now.startOf('day');
       // If no specific time mentioned, default to 8 PM for "tonight"
@@ -189,6 +265,7 @@ export const parseRelativeTimeInTimezone = (timeText, userTimezone = 'UTC') => {
         hour = 20;
         minute = 0;
       }
+      console.log(`🕐 Base date: Tonight (${baseDate.toFormat('MMMM dd, yyyy')})`);
     } else if (lowerText.includes('morning')) {
       baseDate = lowerText.includes('tomorrow') ? 
         now.plus({ days: 1 }).startOf('day') : 
@@ -198,6 +275,7 @@ export const parseRelativeTimeInTimezone = (timeText, userTimezone = 'UTC') => {
         hour = 9;
         minute = 0;
       }
+      console.log(`🕐 Base date: Morning (${baseDate.toFormat('MMMM dd, yyyy')})`);
     } else if (lowerText.includes('afternoon')) {
       baseDate = lowerText.includes('tomorrow') ? 
         now.plus({ days: 1 }).startOf('day') : 
@@ -207,6 +285,7 @@ export const parseRelativeTimeInTimezone = (timeText, userTimezone = 'UTC') => {
         hour = 14;
         minute = 0;
       }
+      console.log(`🕐 Base date: Afternoon (${baseDate.toFormat('MMMM dd, yyyy')})`);
     } else if (lowerText.includes('evening')) {
       baseDate = lowerText.includes('tomorrow') ? 
         now.plus({ days: 1 }).startOf('day') : 
@@ -216,6 +295,7 @@ export const parseRelativeTimeInTimezone = (timeText, userTimezone = 'UTC') => {
         hour = 18;
         minute = 0;
       }
+      console.log(`🕐 Base date: Evening (${baseDate.toFormat('MMMM dd, yyyy')})`);
     }
     
     // Apply specific time if extracted
