@@ -6,7 +6,8 @@ import User from './models/user.model.js';
 import { addWhatsappSubscriber, removeWhatsappSubscriber } from './controllers/user.controller.js';
 import { getTodaysTasks, getTomrrowsTasks, getUpcomingTasks, getAllTasks, sendReminderForAllUsers, productivityReport } from './whatsappBot/whatsappBot.controller.js';
 import {runWitTest}from './wit.js'
-import { addTaskFromWhatsapp } from './utils/taskUtils.js';
+import { addTaskFromWhatsapp ,formatDateForWhatsapp} from './utils/taskUtils.js';
+
 // Store registered users and their attempt counts
 const registeredUsers = new Set();
 const userAttempts = new Map(); // Track failed attempts per user
@@ -329,10 +330,7 @@ No tasks found.
 Visit www.taskai.studio to create tasks.
 Type *0* for main menu.`;
           } else {
-            const taskList = allTasks
-              .slice(0, 10)
-              .map((task, index) => `${index + 1}. ${task.title}\n   ${new Date(task.dueDate).toLocaleDateString()}`)
-              .join('\n\n');
+            const taskList = await formatDateForWhatsapp(allTasks);
 
             const totalCount = allTasks.length;
             const showingCount = Math.min(10, totalCount);
@@ -617,18 +615,15 @@ To switch accounts, type *logout* first.`
           // Send the user's message to Wit AI
           const witres = await runWitTest(content);
           console.log('Wit AI result:', witres);
-          addTaskFromWhatsapp(number,witres)
+          const task = await addTaskFromWhatsapp(number, witres);
+          const taskWithFormatedDate=await formatDateForWhatsapp([task])
           
-          await sendMessageWithDelay(message.from, `*AI Task Analysis Complete*
+          console.log("task from bot file ", taskWithFormatedDate);
 
-Task: "${content}"
+          await sendMessageWithDelay(message.from, `Task Added Successfully
+• Task: ${taskWithFormatedDate}
 
-AI Analysis Results:
-• Intent: ${witres.intent || 'Not detected'}
-• Date/Time: ${witres.datetime || 'Not specified'}  
-• Priority: ${witres.priority || 'Not specified'}
 
-Visit www.taskai.studio to save this task.
 
 Type *0* for main menu or *7* for another task.`);
           return; // Exit early to prevent other message handling

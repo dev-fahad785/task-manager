@@ -1,4 +1,7 @@
-import { convertWitDateToUserTimezone, parseRelativeTimeInTimezone } from '../utils/timezoneUtils.js';
+import {
+  convertWitDateToUserTimezone,
+  parseRelativeTimeInTimezone,
+} from "../utils/timezoneUtils.js";
 import TaskModel from "../models/task.model.js";
 import UserModel from "../models/user.model.js";
 
@@ -94,4 +97,17 @@ export const addTaskFromWhatsapp = async (number, task) => {
     console.error("❌ Error in addTaskFromWhatsapp:", error);
     return null;
   }
+};
+
+export const formatDateForWhatsapp = async (allTasks) => {
+  const FromatedDate = allTasks
+    .slice(0, 10)
+    .map(
+      (task, index) =>
+        `${index + 1}. ${task.title}\n   ${new Date(
+          task.dueDate
+        ).toLocaleDateString()}`
+    )
+    .join("\n\n");
+  return FromatedDate;
 };
