@@ -21,6 +21,9 @@ export const runWitTest = async (message) => {
 
     let datetime = null;
     let datetimeFormatted = "No datetime";
+    let dateOnly = null;
+    let timeOnly = null;
+
     const datetimeEntity = entities["wit$datetime:datetime"]?.[0];
     
     if (datetimeEntity) {
@@ -32,17 +35,18 @@ export const runWitTest = async (message) => {
         isoDate = datetimeEntity.value;
         console.log("📅 Single value:", isoDate);
       } else if (datetimeEntity.type === "interval") {
-        // For intervals, use FROM value (start time) instead of TO (end time)
         isoDate = datetimeEntity.from?.value || datetimeEntity.to?.value;
-        console.log("📅 Interval - From:", datetimeEntity.from?.value);
-        console.log("📅 Interval - To:", datetimeEntity.to?.value);
-        console.log("📅 Using:", isoDate);
+        console.log("📅 Interval - Using:", isoDate);
       }
 
       if (isoDate) {
-        datetime = isoDate;
-        datetimeFormatted = DateTime.fromISO(isoDate, { setZone: true })
-          .toFormat("MMMM dd, yyyy 'at' h:mm a ZZZZ");
+        const dt = DateTime.fromISO(isoDate, { setZone: true });
+        
+        // ✅ Clean formats
+        datetime = dt.toFormat("yyyy-MM-dd HH:mm");  // "2025-08-19 10:00"
+        datetimeFormatted = dt.toFormat("MMMM dd, yyyy 'at' h:mm a"); // "August 19, 2025 at 10:00 AM"
+        dateOnly = dt.toFormat("yyyy-MM-dd"); // "2025-08-19"
+        timeOnly = dt.toFormat("HH:mm");      // "10:00"
       }
     }
 
@@ -53,6 +57,8 @@ export const runWitTest = async (message) => {
       intent, 
       datetime,
       datetimeFormatted,
+      date: dateOnly,
+      time: timeOnly,
       priority 
     };
     
@@ -64,3 +70,5 @@ export const runWitTest = async (message) => {
     return { text: message, intent: "Error", datetime: null, priority:"medium" };
   }
 };
+
+runWitTest('Schedule a meeting with the team today at 10 pM urgent');
