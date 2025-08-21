@@ -51,11 +51,13 @@ export const runWitTest = async (message) => {
     }
 
     const priority = entities["priority:priority"]?.[0]?.value || "Medium";
-
+    //convert datetime to a valid js date object
+    const finalDateTime = datetime ? new Date(datetime) : null;
     const result = { 
       text: message, 
       intent, 
       datetime,
+      finalDateTime,
       datetimeFormatted,
       date: dateOnly,
       time: timeOnly,
