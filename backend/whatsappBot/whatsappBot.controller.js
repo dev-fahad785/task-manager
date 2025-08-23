@@ -195,20 +195,20 @@ export const sendReminderForAllUsers = async () => {
 
         if (!tasks || tasks.length === 0) {
             console.log(`ℹ️ No tasks for ${user.whatsappNumber}`);
-            reminders.push({
-                number: user.whatsappNumber,
-                message: `Hi ${user.name}, you have no tasks for today. Enjoy your day! ✅`
-            });
+            // reminders.push({
+            //     number: user.whatsappNumber,
+            //     message: `Hi ${user.name}, you have no tasks for today. Enjoy your day! ✅`
+            // });
             continue;
         }
 
 
 
         if (tasks.todaysTasks.length === 0) {
-            reminders.push({
-                number: user.whatsappNumber,
-                message: `Hi ${user.name}, you have no tasks scheduled for today! ✅`
-            });
+            // reminders.push({
+            //     number: user.whatsappNumber,
+            //     message: `Hi ${user.name}, you have no tasks scheduled for today! ✅`
+            // });
         } else {
             reminders.push({
                 number: user.whatsappNumber,

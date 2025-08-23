@@ -105,6 +105,7 @@ client.on('ready', async () => {
   // '*/10 * * * * *' for every 10 seconds
   // '*/1 * * * *' for every minute
   // '0 */3 * * *' for every 3 hours
+  // ('*/10 * * * * *' for every 10 seconds)
   cron.schedule('0 */3 * * *', async () => {
     console.log('⏰ Running scheduled task...');
 

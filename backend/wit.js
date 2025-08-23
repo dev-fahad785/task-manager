@@ -73,4 +73,4 @@ export const runWitTest = async (message) => {
   }
 };
 
-runWitTest('Schedule a meeting with the team today at 10 pM urgent');
+runWitTest('Schedule a meeting with the team today at 10 pM urgent'); 
