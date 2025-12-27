@@ -33,7 +33,9 @@ app.use(cors(corsOptions));
 app.get('/', (req, res) => {
     res.status(200).json({ message: 'Hello from the server!' });
 })
-
+app.get('/health', (req, res) => {
+    res.status(200).json({ message: 'Server is healthy!' });
+})
 
 app.use('/user', userRoutes);
 app.use('/task', taskRoutes)
