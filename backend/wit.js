@@ -14,7 +14,7 @@ export const runWitTest = async (message) => {
       },
     });
     
-    console.log("🤖 Wit AI Response:", response.data);
+    // console.log("🤖 Wit AI Response:", response.data);
     const { intents, entities } = response.data;
 
     const intent = intents?.[0]?.name || "No intent detected";
@@ -29,7 +29,7 @@ export const runWitTest = async (message) => {
     if (datetimeEntity) {
       let isoDate = null;
       
-      console.log("📅 DateTime entity:", datetimeEntity);
+      // console.log("📅 DateTime entity:", datetimeEntity);
       
       if (datetimeEntity.type === "value") {
         isoDate = datetimeEntity.value;
@@ -64,7 +64,7 @@ export const runWitTest = async (message) => {
       priority 
     };
     
-    console.log("🎯 Final Wit result:", result);
+    // console.log("🎯 Final Wit result:", result);
     return result;
     
   } catch (error) {

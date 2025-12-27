@@ -5,8 +5,8 @@ import qrcode from 'qrcode-terminal';
 import User from './models/user.model.js';
 import { addWhatsappSubscriber, removeWhatsappSubscriber } from './controllers/user.controller.js';
 import { getTodaysTasks, getTomrrowsTasks, getUpcomingTasks, getAllTasks, sendReminderForAllUsers, productivityReport } from './whatsappBot/whatsappBot.controller.js';
-import {runWitTest}from './wit.js'
-import { addTaskFromWhatsapp ,formatDateForWhatsapp} from './utils/taskUtils.js';
+import { runWitTest } from './wit.js';
+import { addTaskFromWhatsapp, formatDateForWhatsapp } from './utils/taskUtils.js';
 
 // Store registered users and their attempt counts
 const registeredUsers = new Set();
@@ -24,6 +24,7 @@ let isProcessingQueue = false;
 const client = new Client({
   authStrategy: new LocalAuth(),
   puppeteer: {
+    executablePath: '/snap/bin/chromium',
     args: ['--no-sandbox', '--disable-setuid-sandbox'],
     headless: true,
   },
@@ -437,7 +438,7 @@ Please choose a number from 0-9.
 
 Type *0* for menu or *help*.`;
         break;
-    }
+      }
 
     await sendMessageWithDelay(chatId, responseMessage);
 
@@ -615,7 +616,7 @@ To switch accounts, type *logout* first.`
         
           // Send the user's message to Wit AI
           const witres = await runWitTest(content);
-          console.log('Wit AI result:', witres);
+          // console.log('Wit AI result:', witres);
           const task = await addTaskFromWhatsapp(number, witres);
           const taskWithFormatedDate=await formatDateForWhatsapp([task])
           
