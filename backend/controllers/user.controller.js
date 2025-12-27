@@ -50,15 +50,16 @@ export const registerUser = async (req, res) => {
 export const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
+        const emailNormalized = email?.toLowerCase().trim();
 
         if (!email || !password) {
             return res.status(400).json({ message: "Email and password required" });
         }
 
-        const user = await UserModel.findOne({ email });
+        const user = await UserModel.findOne({ email: emailNormalized });
         console.log(user)
         if (!user) {
-            return res.status(404).json({ message: "User not found" });
+            return res.status(404).json({ message: "Userrrr not found" });
         }
 
         const isPasswordCorrect = await bcrypt.compare(password, user.password);
