@@ -1,6 +1,7 @@
 const allowedOrigins = [
     'https://task-ai-tau.vercel.app', 
     'http://localhost:5173', 
+    'http://0.0.0.0:3000',
     'http://www.taskai.studio', 
     'https://www.taskai.studio'
 ];
