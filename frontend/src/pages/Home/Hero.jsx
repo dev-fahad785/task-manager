@@ -7,7 +7,7 @@ const ResponsiveHeroSection = () => {
   const heroRef = useRef(null);
   const videoRef = useRef(null);
 
-  const fullText = "Never Forget To(test commit to main2) ";
+  const fullText = "Never Forget To";
   const words = ["Work", "Exercise", "Study", "Create"];
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
 
