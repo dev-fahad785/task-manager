@@ -266,35 +266,6 @@ const ResponsiveHeroSection = () => {
             </div>
           </div>
         </div>
-
-        {/* Bottom Stats with Futuristic Design */}
-        <div
-          className={`mt-12 sm:mt-16 lg:mt-20 grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 transition-all duration-1000 ${
-            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-          }`}
-          style={{ transitionDelay: "1300ms" }}
-        >
-          {[
-            { number: "10K+", label: "Tasks Managed", icon: "📋", color: "from-cyan-500 to-blue-500" },
-            { number: "5K+", label: "Happy Users", icon: "🚀", color: "from-teal-500 to-green-500" },
-            { number: "99.9%", label: "Uptime", icon: "⚡", color: "from-purple-500 to-pink-500" }
-          ].map((stat, index) => (
-            <div
-              key={index}
-              className="relative group text-center p-4 sm:p-6 rounded-2xl bg-gray-800/40 backdrop-blur-sm border border-gray-700/50 transform hover:scale-110 transition-all duration-500 hover:shadow-xl hover:shadow-cyan-500/20 hover:border-cyan-500/50"
-            >
-              <div className={`absolute inset-0 bg-gradient-to-br ${stat.color} opacity-0 group-hover:opacity-10 rounded-2xl transition-opacity duration-500`}></div>
-              <div className="relative z-10">
-                <div className="text-2xl sm:text-4xl mb-2 sm:mb-3">{stat.icon}</div>
-                <div className="text-2xl sm:text-3xl font-bold text-gray-100 mb-1 sm:mb-2" style={{ fontFamily: "'Orbitron', sans-serif" }}>
-                  {stat.number}
-                </div>
-                <div className="text-sm sm:text-base text-gray-400 font-medium">{stat.label}</div>
-              </div>
-              <div className="absolute top-2 right-2 w-2 h-2 bg-cyan-400 rounded-full animate-pulse opacity-60"></div>
-            </div>
-          ))}
-        </div>
       </section>
 
       {/* Custom Styles */}
