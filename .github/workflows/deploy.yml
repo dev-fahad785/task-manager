@@ -1,0 +1,29 @@
+name: Deploy to Digital Ocean
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DO_HOST }}
+          username: ${{ secrets.DO_USERNAME }}
+          key: ${{ secrets.DO_SSH_KEY }}
+          script: |
+            # Navigate to the project directory
+            # Adjust this path if your project is in a different location on the server
+            cd task-manager/
+            
+            # Pull latest changes
+            git pull origin main
+            
+            # Rebuild and restart containers
+            # -d: Detached mode
+            # --build: Rebuild images before starting containers
+            docker-compose up -d --build
