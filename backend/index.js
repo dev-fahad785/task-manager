@@ -1,9 +1,10 @@
 import dotenv from 'dotenv';
+
+dotenv.config();
+
 import { connectDB } from './config/db.js';
 import app from './app.js';
 import './whatsapp.bot.js'; // Keep the bot running
-
-dotenv.config();
 
 const PORT = process.env.PORT || 5000;
 

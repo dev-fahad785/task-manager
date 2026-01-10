@@ -11,6 +11,8 @@ import { sendMenu, handleMenuSelection } from './menu.service.js';
 import { addWhatsappSubscriber, removeWhatsappSubscriber } from '../../controllers/user.controller.js';
 import { runWitTest } from '../../wit.js';
 import { addTaskFromWhatsapp, formatDateForWhatsapp } from '../../utils/taskUtils.js';
+import { detectTimezoneFromPhone } from '../../utils/timezoneUtils.js';
+import User from '../../models/user.model.js';
 
 // Check if user is temporarily blocked
 const isUserBlocked = (number) => {
@@ -208,8 +210,23 @@ To switch accounts, type *logout* first.`
           // Remove user from waiting state
           waitingForTaskInput.delete(number);
         
+          // Fetch user to get timezone
+          const user = await User.findOne({ whatsappNumber: number });
+          
+          // Auto-detect and save timezone if missing or UTC (lazy update)
+          if (user && (!user.timezone || user.timezone === 'UTC')) {
+            const detectedZone = detectTimezoneFromPhone(number);
+            if (detectedZone && detectedZone !== 'UTC') {
+              user.timezone = detectedZone;
+              await user.save();
+              console.log(`🌍 Lazy-updated timezone for ${number} to ${detectedZone}`);
+            }
+          }
+
+          const userTimezone = user?.timezone || 'UTC';
+
           // Send the user's message to Wit AI
-          const witres = await runWitTest(content);
+          const witres = await runWitTest(content, userTimezone);
           // console.log('Wit AI result:', witres);
           const task = await addTaskFromWhatsapp(number, witres);
           const taskWithFormatedDate=await formatDateForWhatsapp([task])
