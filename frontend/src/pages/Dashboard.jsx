@@ -564,7 +564,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import LoaderScreen from "../components/Loader";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import AiSuggestion from "../components/AiSuggestion";
 import Navbar from "../components/Navbar";
 import WebsiteTour from "../components/WebsiteTour";
@@ -572,9 +572,14 @@ import InstallPWAButton from "../components/InstallPWA";
 
 function Dashboard() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const allowedFilters = ["Pending", "Tomorrow", "late", "Completed", "Overdue"];
+  const initialFilter = allowedFilters.includes(searchParams.get("tab"))
+    ? searchParams.get("tab")
+    : "Pending";
   const [tasks2, setTasks2] = useState([]);
   const [filteredTask, setFilteredTasks] = useState([]);
-  const [activeFilter, setActiveFilter] = useState("Pending");
+  const [activeFilter, setActiveFilter] = useState(initialFilter);
   const [status, setStatus] = useState("idle");
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -635,6 +640,7 @@ function Dashboard() {
       console.log("📊 Available tasks:", tasks2.length);
 
       setActiveFilter(filterStatus);
+      setSearchParams({ tab: filterStatus }, { replace: true });
 
       if (tasks2.length === 0) {
         setFilteredTasks([]);
@@ -703,6 +709,22 @@ function Dashboard() {
     }
   }, [userID, getAllUserTasks]);
 
+  // Keep active filter in sync with the URL when navigating back/forward
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    if (tab && tab !== activeFilter) {
+      setActiveFilter(tab);
+    }
+  }, [searchParams, activeFilter]);
+
+  // Ensure the URL always reflects the current active filter (including first load)
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    if (activeFilter && tab !== activeFilter) {
+      setSearchParams({ tab: activeFilter }, { replace: true });
+    }
+  }, [activeFilter, searchParams, setSearchParams]);
+
   // Filter tasks when tasks2 changes - removed the callback dependency to prevent infinite loop
   useEffect(() => {
     if (tasks2.length > 0) {
@@ -715,6 +737,7 @@ function Dashboard() {
   // Rest of your functions remain the same
   const deleteTask = async (taskID) => {
     setStatus("loading");
+    await new Promise((resolve) => setTimeout(resolve, 120)); // allow loader to render
     try {
       const response = await axios.delete(
         `${import.meta.env.VITE_BACKEND_URL}/task/deleteTask/${taskID}`,
@@ -725,12 +748,14 @@ function Dashboard() {
         }
       );
       console.log(response.data);
+      await getAllUserTasks();
       setStatus("success");
-      window.location.reload();
+      setTimeout(() => setStatus("idle"), 600);
     } catch (error) {
       console.log(error);
       setStatus("error");
       setErrorMsg("Error while deleting the Task");
+      setTimeout(() => setStatus("idle"), 1200);
     }
   };
 
@@ -739,6 +764,8 @@ function Dashboard() {
   };
 
   const updateCompletionStatus = async (taskID, completionStatus) => {
+    setStatus("loading");
+    await new Promise((resolve) => setTimeout(resolve, 120));
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_BACKEND_URL}/task/updateTaskStatus`,
@@ -756,17 +783,21 @@ function Dashboard() {
         setStatus("error");
         setErrorMsg(response.data.message);
       }
+      await getAllUserTasks();
       setStatus("success");
       console.log("Updated successfully");
-      window.location.reload();
+      setTimeout(() => setStatus("idle"), 600);
     } catch (error) {
       console.log(error);
       setStatus("error");
       setErrorMsg("error occured while updating the task");
+      setTimeout(() => setStatus("idle"), 1200);
     }
   };
 
   const handleReschedule = async (task) => {
+    setStatus("loading");
+    await new Promise((resolve) => setTimeout(resolve, 120));
     try {
       const dueDate = new Date();
       dueDate.setHours(23, 59, 0, 0);
@@ -788,9 +819,14 @@ function Dashboard() {
 
       console.log("Task rescheduled successfully:", response.data);
       // Refresh tasks after rescheduling
-      getAllUserTasks();
+      await getAllUserTasks();
+      setStatus("success");
+      setTimeout(() => setStatus("idle"), 600);
     } catch (error) {
       console.error("Error rescheduling task:", error);
+      setStatus("error");
+      setErrorMsg("Error while rescheduling the Task");
+      setTimeout(() => setStatus("idle"), 1200);
     }
   };
 
