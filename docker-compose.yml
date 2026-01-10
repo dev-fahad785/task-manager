@@ -16,17 +16,15 @@ services:
     build:
       context: ./backend
     env_file:
-      - .env
-    environment:
-      - NODE_ENV=${NODE_ENV}
-      - MONGO_URI=${MONGO_URI}
-      - JWT_SECRET=${JWT_SECRET}
-      - GEMENI_API_KEY=${GEMENI_API_KEY}
+      - ./backend/.env
     ports:
       - "5000:5000"
     depends_on:
       - mongo
     restart: always
+    volumes:
+      - ./backend/.wwebjs_auth:/app/.wwebjs_auth
+      - ./backend/.wwebjs_cache:/app/.wwebjs_cache
     networks:
       - fullstack-network
 
@@ -34,6 +32,7 @@ services:
     image: mongo:latest
     volumes:
       - mongo-data:/data/db
+
     restart: always
     networks:
       - fullstack-network
