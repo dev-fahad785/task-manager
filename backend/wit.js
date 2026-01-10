@@ -3,9 +3,10 @@ import { DateTime } from "luxon";
 
 const WIT_TOKEN = "Bearer 72HIVMNTYWLQBNYTKOULYUBXDKTGUIOX";
 
-export const runWitTest = async (message) => {
+export const runWitTest = async (message, timezone = 'UTC') => {
   try {
-    const url = `https://api.wit.ai/message?v=20230804&q=${encodeURIComponent(message)}`;
+    const context = JSON.stringify({ timezone });
+    const url = `https://api.wit.ai/message?v=20230804&q=${encodeURIComponent(message)}&context=${encodeURIComponent(context)}`;
 
     const response = await axios.get(url, {
       headers: {
@@ -43,7 +44,7 @@ export const runWitTest = async (message) => {
         const dt = DateTime.fromISO(isoDate, { setZone: true });
         
         // ✅ Clean formats
-        datetime = dt.toFormat("yyyy-MM-dd HH:mm");  // "2025-08-19 10:00"
+        datetime = dt.toISO(); // Keeps timezone info
         datetimeFormatted = dt.toFormat("MMMM dd, yyyy 'at' h:mm a"); // "August 19, 2025 at 10:00 AM"
         dateOnly = dt.toFormat("yyyy-MM-dd"); // "2025-08-19"
         timeOnly = dt.toFormat("HH:mm");      // "10:00"
@@ -73,4 +74,5 @@ export const runWitTest = async (message) => {
   }
 };
 
-runWitTest('Schedule a meeting with the team today at 10 pM urgent'); 
+const result=await runWitTest('Schedule a meeting with the team today at 10 pm urgent'); 
+console.log(result)

@@ -84,7 +84,7 @@ export const addTaskFromWhatsapp = async (number, task) => {
       title: task.text,
       description: task.text,
       estTime: 30,
-      dueDate: task.finalDateTime,
+      dueDate: finalDateTime,
       priority: task.priority,
     });
 
