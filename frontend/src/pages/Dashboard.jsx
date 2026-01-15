@@ -851,15 +851,15 @@ function Dashboard() {
     switch (priority) {
       case "High":
       case "high":
-        return "bg-red-100 text-red-800";
+        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
       case "Medium":
       case "medium":
-        return "bg-orange-100 text-orange-800";
+        return "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200";
       case "Low":
       case "low":
-        return "bg-green-100 text-green-800";
+        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200";
     }
   }
 
@@ -892,7 +892,7 @@ function Dashboard() {
   }
 
   return (
-    <div className="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen relative">
+    <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 min-h-screen relative transition-colors duration-200">
       <LoaderScreen
         status={status}
         errorMessage={errorMsg}
@@ -904,21 +904,21 @@ function Dashboard() {
         <Navbar user={user} />
 
         <main className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          <div className="lg:col-span-1 w-full bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-4 max-h-[90vh] overflow-y-auto">
-            <h2 className="text-lg font-semibold mb-3 text-gray-800">
+          <div className="lg:col-span-1 w-full bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-4 max-h-[90vh] overflow-y-auto transition-colors duration-200">
+            <h2 className="text-lg font-semibold mb-3 text-gray-800 dark:text-gray-100">
               AI Suggestions
             </h2>
             <AiSuggestion />
           </div>
 
           <div className="lg:col-span-3">
-            <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 mb-6">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 sm:p-6 mb-6 border border-gray-200 dark:border-gray-700 transition-colors duration-200">
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
                 <div className="flex items-center gap-2">
-                  <h2 className="text-lg font-semibold text-gray-800">
+                  <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
                     Your Tasks
                   </h2>
-                  <span className="text-sm text-gray-500">
+                  <span className="text-sm text-gray-500 dark:text-gray-400">
                     ({filteredTask.length} tasks)
                   </span>
                 </div>
@@ -948,7 +948,7 @@ function Dashboard() {
               </div>
 
               {/* Tab Navigation */}
-              <div className="flex overflow-x-auto pb-2 mb-6 border-b scrollbar-hide">
+              <div className="flex overflow-x-auto pb-2 mb-6 border-b border-gray-200 dark:border-gray-700 scrollbar-hide">
                 {["Pending", "Tomorrow", "late", "Completed", "Overdue"].map(
                   (status) => {
                     const labels = {
@@ -967,8 +967,8 @@ function Dashboard() {
                         onClick={() => filterTaskByCompletionStatus(status)}
                         className={`px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors ${
                           isActive
-                            ? "text-indigo-600 border-b-2 border-indigo-600"
-                            : "text-gray-500 hover:text-gray-700"
+                            ? "text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400"
+                            : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                         }`}
                       >
                         {labels[status]}
@@ -981,16 +981,16 @@ function Dashboard() {
               {/* Task List */}
               <div className="space-y-4">
                 {filteredTask.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
+                  <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                     <p>No tasks found for this filter.</p>
                   </div>
                 ) : (
                   filteredTask.map((task) => (
                     <div
                       key={task._id}
-                      className={`bg-white rounded-xl border ${
+                      className={`bg-white dark:bg-gray-800 rounded-xl border ${
                         task.completionStatus === "Completed"
-                          ? "border-gray-200"
+                          ? "border-gray-200 dark:border-gray-700"
                           : getPriorityBorderColor(task.priority)
                       } 
                     shadow hover:shadow-lg transition-all p-4 ${
@@ -1004,8 +1004,8 @@ function Dashboard() {
                               <h3
                                 className={`font-semibold text-lg ${
                                   task.completionStatus === "Completed"
-                                    ? "line-through text-gray-500"
-                                    : "text-gray-800"
+                                    ? "line-through text-gray-500 dark:text-gray-400"
+                                    : "text-gray-800 dark:text-gray-100"
                                 }`}
                               >
                                 {task.title}
@@ -1013,8 +1013,8 @@ function Dashboard() {
                               <p
                                 className={`text-sm mt-1 ${
                                   task.completionStatus === "Completed"
-                                    ? "text-gray-400 line-through"
-                                    : "text-gray-600"
+                                    ? "text-gray-400 dark:text-gray-500 line-through"
+                                    : "text-gray-600 dark:text-gray-300"
                                 }`}
                               >
                                 {task.description}
@@ -1023,7 +1023,7 @@ function Dashboard() {
 
                             <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-2 sm:mt-0">
                               <select
-                                className="border border-gray-300 text-gray-700 bg-white rounded-full text-sm px-3 py-1.5 shadow-sm hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                className="border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 rounded-full text-sm px-3 py-1.5 shadow-sm hover:border-gray-400 dark:hover:border-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400"
                                 onChange={(e) =>
                                   updateCompletionStatus(
                                     task._id,
@@ -1054,10 +1054,10 @@ function Dashboard() {
                                 {task.priority}
                               </span>
 
-                              <div className="flex items-center gap-2 text-gray-400">
+                              <div className="flex items-center gap-2 text-gray-400 dark:text-gray-500">
                                 <button
                                   onClick={() => updateTask(task)}
-                                  className="p-1 hover:text-blue-600 rounded-full hover:bg-blue-50"
+                                  className="p-1 hover:text-blue-600 dark:hover:text-blue-400 rounded-full hover:bg-blue-50 dark:hover:bg-blue-900/30"
                                 >
                                   <svg
                                     className="w-4 h-4"
@@ -1075,7 +1075,7 @@ function Dashboard() {
                                 </button>
                                 <button
                                   onClick={() => deleteTask(task._id)}
-                                  className="p-1 hover:text-red-600 rounded-full hover:bg-red-50"
+                                  className="p-1 hover:text-red-600 dark:hover:text-red-400 rounded-full hover:bg-red-50 dark:hover:bg-red-900/30"
                                 >
                                   <svg
                                     className="w-4 h-4"
@@ -1095,7 +1095,7 @@ function Dashboard() {
                             </div>
                           </div>
 
-                          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-4 text-xs text-gray-500">
+                          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-4 text-xs text-gray-500 dark:text-gray-400">
                             <span className="flex items-center">
                               <svg
                                 className="w-4 h-4 mr-1"
