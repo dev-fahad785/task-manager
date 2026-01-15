@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom'
+import { ThemeProvider } from './context/ThemeContext';
 
 import Login from './pages/Login'
 import SignUp from './pages/SignUp'
@@ -23,7 +24,7 @@ const App = () => {
   console.log(isUserLoggedIn)
   // console.log(user?.user)
   return (
-    <>
+    <ThemeProvider>
       <BrowserRouter>
         <Routes>
           {/* Role-based Routes */}
@@ -55,7 +56,7 @@ const App = () => {
           />
         </Routes>
       </BrowserRouter>
-    </>
+    </ThemeProvider>
   );
 };
 
