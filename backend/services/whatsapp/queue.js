@@ -23,7 +23,8 @@ const processMessageQueue = async () => {
 
     try {
       await randomDelay(delay);
-      await client.sendMessage(chatId, message);
+      // Disable sendSeen to prevent "Cannot read properties of undefined (reading 'markedUnread')" error
+      await client.sendMessage(chatId, message, { sendSeen: false });
       console.log(`✅ Message sent to ${chatId.split('@')[0]} with ${Math.round(delay)}ms delay`);
       resolve();
     } catch (error) {
