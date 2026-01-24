@@ -4,17 +4,12 @@ services:
   frontend:
     build:
       context: ./frontend
-      target: development
+      target: production
     ports:
-      - "3000:5173"
+      - "3000:80"
     depends_on:
       - backend
     restart: always
-    environment:
-      - VITE_CHOKIDAR_USEPOLLING=true
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
     networks:
       - fullstack-network
 
@@ -32,8 +27,6 @@ services:
     volumes:
       - ./backend/.wwebjs_auth:/app/.wwebjs_auth
       - ./backend/.wwebjs_cache:/app/.wwebjs_cache
-      - ./backend:/app
-      - /app/node_modules
     networks:
       - fullstack-network
 
