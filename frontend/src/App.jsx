@@ -11,6 +11,7 @@ import Summary from './pages/Summary';
 import AdminPanel from './pages/AdminPanel';
 import Profile from './pages/Profile';
 
+
 const App = () => {
 
   const user = JSON.parse(localStorage.getItem("user")) || null;
