@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import LoaderScreen from "../components/Loader";
+import RecurrenceSelector from "../components/RecurrenceSelector";
 import { Link } from "react-router-dom";
 const AddTodo = () => {
   const { state } = useLocation(); // Get todo from route
@@ -26,6 +27,7 @@ const AddTodo = () => {
     estTime: "",
     priority: "Low",
     dueDate: "",
+    recurrence: { enabled: false },
   });
 
   // If state.todo exists, it's edit mode
@@ -109,6 +111,7 @@ const AddTodo = () => {
             estTime: "",
             priority: "Low",
             dueDate: "",
+            recurrence: { enabled: false },
           });
           console.log(newTask);
           // window.location.reload();
@@ -236,6 +239,22 @@ const AddTodo = () => {
           className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none"
         />
       </div>
+
+      {/* Recurrence Selector */}
+      <RecurrenceSelector
+        recurrence={newTask.recurrence}
+        onChange={(recurrence) => setNewTask({ ...newTask, recurrence })}
+      />
+
+      {/* Warning for editing recurring instances */}
+      {state?.todo?.isRecurringInstance && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <p className="text-sm text-yellow-800">
+            ⚠️ This is a generated instance of a recurring task. Changes here won't affect future occurrences.
+            To modify the recurrence pattern, edit the parent template.
+          </p>
+        </div>
+      )}
 
       <button
         type="submit"

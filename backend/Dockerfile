@@ -39,7 +39,7 @@ WORKDIR /app
 
 # Copy and install dependencies
 COPY package*.json ./
-RUN npm install --production
+RUN npm install
 
 # Copy app source
 COPY . .
@@ -47,5 +47,5 @@ COPY . .
 # Expose backend port
 EXPOSE 5000
 
-# Start the app
-CMD ["node", "index.js"]
+# Start the app with nodemon for hot-reload
+CMD ["npx", "nodemon", "index.js"]

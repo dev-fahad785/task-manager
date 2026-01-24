@@ -573,7 +573,7 @@ import InstallPWAButton from "../components/InstallPWA";
 function Dashboard() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const allowedFilters = ["Pending", "Tomorrow", "late", "Completed", "Overdue"];
+  const allowedFilters = ["Pending", "Tomorrow", "late", "Completed", "Overdue", "Recurring"];
   const initialFilter = allowedFilters.includes(searchParams.get("tab"))
     ? searchParams.get("tab")
     : "Pending";
@@ -605,6 +605,19 @@ function Dashboard() {
         }
       );
 
+      // Also trigger generation of recurring tasks
+      try {
+        await axios.post(
+          `${import.meta.env.VITE_BACKEND_URL}/task/checkAndGenerateRecurringTasks`,
+          { userID },
+          {
+            headers: { Authorization: `Bearer ${token}` }
+          }
+        );
+      } catch (err) {
+        console.error("Error generating recurring tasks:", err);
+      }
+
       console.log("Fetched tasks:", response.data.tasks);
 
       // Sort tasks immediately after fetching
@@ -635,12 +648,30 @@ function Dashboard() {
 
   // Filter tasks by completion status - fixed case sensitivity and logic
   const filterTaskByCompletionStatus = useCallback(
-    (filterStatus) => {
+    async (filterStatus) => {
       console.log("🔄 Tab clicked:", filterStatus);
-      console.log("📊 Available tasks:", tasks2.length);
-
+      
       setActiveFilter(filterStatus);
       setSearchParams({ tab: filterStatus }, { replace: true });
+
+      // Handle Recurring tasks separately
+      if (filterStatus === "Recurring") {
+        try {
+          const response = await axios.get(
+            `${import.meta.env.VITE_BACKEND_URL}/task/getRecurringTasks/${userID}`,
+            {
+              headers: { Authorization: `Bearer ${token}` }
+            }
+          );
+          setFilteredTasks(response.data.tasks || []);
+        } catch (error) {
+          console.error("Error fetching recurring tasks:", error);
+          setFilteredTasks([]);
+        }
+        return;
+      }
+
+      console.log("📊 Available tasks:", tasks2.length);
 
       if (tasks2.length === 0) {
         setFilteredTasks([]);
@@ -830,6 +861,28 @@ function Dashboard() {
     }
   };
 
+  const stopRecurrence = async (taskID) => {
+    setStatus("loading");
+    try {
+      await axios.post(
+        `${import.meta.env.VITE_BACKEND_URL}/task/stopRecurrence`,
+        { taskID },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+      setStatus("success");
+      // Refresh list
+      filterTaskByCompletionStatus("Recurring");
+      setTimeout(() => setStatus("idle"), 600);
+    } catch (error) {
+      console.error("Error stopping recurrence:", error);
+      setStatus("error");
+      setErrorMsg("Failed to stop recurrence");
+      setTimeout(() => setStatus("idle"), 1200);
+    }
+  };
+
   // Helper functions
   function getPriorityBorderColor(priority) {
     switch (priority) {
@@ -949,7 +1002,7 @@ function Dashboard() {
 
               {/* Tab Navigation */}
               <div className="flex overflow-x-auto pb-2 mb-6 border-b border-gray-200 dark:border-gray-700 scrollbar-hide">
-                {["Pending", "Tomorrow", "late", "Completed", "Overdue"].map(
+                {["Pending", "Tomorrow", "late", "Completed", "Overdue", "Recurring"].map(
                   (status) => {
                     const labels = {
                       Pending: "Today",
@@ -957,6 +1010,7 @@ function Dashboard() {
                       late: "Upcoming",
                       Completed: "Completed",
                       Overdue: "Overdue",
+                      Recurring: "Recurring",
                     };
 
                     const isActive = activeFilter === status;
@@ -984,7 +1038,56 @@ function Dashboard() {
                   <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                     <p>No tasks found for this filter.</p>
                   </div>
+                ) : activeFilter === "Recurring" ? (
+                  // RECURRING TASKS RENDER
+                  filteredTask.map((task) => (
+                    <div
+                      key={task._id}
+                      className="bg-white dark:bg-gray-800 rounded-xl border border-blue-200 dark:border-blue-900 shadow hover:shadow-lg transition-all p-4"
+                    >
+                      <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+                        <div className="flex-1">
+                          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <h3 className="font-semibold text-lg text-gray-800 dark:text-gray-100">
+                                  {task.title}
+                                </h3>
+                                <span className="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full">
+                                  {task.recurrence?.pattern}
+                                </span>
+                              </div>
+                              <p className="text-sm mt-1 text-gray-600 dark:text-gray-300">
+                                {task.description}
+                              </p>
+                              {task.recurrence?.nextOccurrence && (
+                                <p className="text-xs text-blue-600 mt-1">
+                                  Next: {new Date(task.recurrence.nextOccurrence).toLocaleDateString()}
+                                </p>
+                              )}
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => updateTask(task)} // Reuse updateTask to edit template
+                                className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md text-sm transition-colors"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => stopRecurrence(task._id)}
+                                className="px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-md text-sm transition-colors"
+                              >
+                                Stop Recurrence
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))
                 ) : (
+                  // STANDARD TASKS RENDER
                   filteredTask.map((task) => (
                     <div
                       key={task._id}
@@ -1002,13 +1105,18 @@ function Dashboard() {
                           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
                             <div>
                               <h3
-                                className={`font-semibold text-lg ${
+                                className={`font-semibold text-lg flex items-center gap-2 ${
                                   task.completionStatus === "Completed"
                                     ? "line-through text-gray-500 dark:text-gray-400"
                                     : "text-gray-800 dark:text-gray-100"
                                 }`}
                               >
                                 {task.title}
+                                {task.isRecurringInstance && (
+                                  <span className="text-[10px] bg-sky-100 text-sky-800 dark:bg-sky-900 dark:text-sky-200 px-1.5 py-0.5 rounded border border-sky-200 dark:border-sky-800 font-normal no-underline inline-block align-middle tracking-tight">
+                                    Recurring
+                                  </span>
+                                )}
                               </h3>
                               <p
                                 className={`text-sm mt-1 ${
