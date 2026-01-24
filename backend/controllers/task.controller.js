@@ -1,5 +1,11 @@
 import TaskModel from "../models/task.model.js";
 import UserModel from "../models/user.model.js";
+import { 
+  calculateNextOccurrence, 
+  updateRecurrencePattern, 
+  stopRecurrence as stopRecurrenceService,
+  checkAndGenerateRecurringTasks as checkAndGenerateService 
+} from "../services/recurringTask.service.js";
 
 export const getUserTasks = async (userID) => {
   try {
@@ -102,7 +108,16 @@ export const addTask = async (req, res) => {
       estTime: newTask.estTime, // Map estimatedTime to estTime
       dueDate: newTask.dueDate,
       priority: newTask.priority,
+      recurrence: newTask.recurrence || { enabled: false },
     });
+
+    // If recurrence is enabled, calculate next occurrence
+    if (task.recurrence.enabled) {
+      const nextOccurrence = calculateNextOccurrence(task);
+      if (nextOccurrence) {
+        task.recurrence.nextOccurrence = nextOccurrence.toISO();
+      }
+    }
 
     const savedTask = await task.save();
 
@@ -331,5 +346,160 @@ export const rescheduleTask = async (req, res) => {
     return res
       .status(500)
       .json({ message: "Error rescheduling task", error: error.message });
+  }
+};
+
+// ============= RECURRING TASK CONTROLLERS =============
+
+/**
+ * Create a recurring task
+ */
+export const createRecurringTask = async (req, res) => {
+  const { userID, newTask } = req.body;
+
+  try {
+    const user = await UserModel.findById(userID);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Validate recurrence configuration
+    if (!newTask.recurrence || !newTask.recurrence.enabled) {
+      return res.status(400).json({ message: "Recurrence configuration is required" });
+    }
+
+    const task = new TaskModel({
+      user_id: user._id,
+      title: newTask.title,
+      description: newTask.description,
+      estTime: newTask.estTime,
+      dueDate: newTask.dueDate,
+      priority: newTask.priority,
+      recurrence: newTask.recurrence,
+    });
+
+    // Calculate next occurrence
+    const nextOccurrence = calculateNextOccurrence(task);
+    if (nextOccurrence) {
+      task.recurrence.nextOccurrence = nextOccurrence.toISO();
+    } else {
+      return res.status(400).json({ message: "Invalid recurrence pattern" });
+    }
+
+    const savedTask = await task.save();
+
+    // Push the task ID into user's tasks array
+    user.task_id.push(savedTask._id);
+    await user.save();
+
+    res.status(200).json({ 
+      message: "Recurring task created successfully", 
+      task: savedTask 
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error while creating recurring task", error: error.message });
+  }
+};
+
+/**
+ * Update recurrence pattern for a task
+ */
+export const updateRecurrence = async (req, res) => {
+  const { taskID, recurrencePattern } = req.body;
+
+  try {
+    const updatedTask = await updateRecurrencePattern(taskID, recurrencePattern);
+    res.status(200).json({ 
+      message: "Recurrence pattern updated successfully", 
+      task: updatedTask 
+    });
+  } catch (error) {
+    console.error(error);
+    if (error.message === 'Task not found') {
+      return res.status(404).json({ message: error.message });
+    }
+    if (error.message.includes('Cannot update recurrence')) {
+      return res.status(400).json({ message: error.message });
+    }
+    res.status(500).json({ 
+      message: "Error while updating recurrence pattern", 
+      error: error.message 
+    });
+  }
+};
+
+/**
+ * Stop recurrence for a task
+ */
+export const stopRecurrence = async (req, res) => {
+  const { taskID } = req.body;
+
+  try {
+    const updatedTask = await stopRecurrenceService(taskID);
+    res.status(200).json({ 
+      message: "Recurrence stopped successfully", 
+      task: updatedTask 
+    });
+  } catch (error) {
+    console.error(error);
+    if (error.message === 'Task not found') {
+      return res.status(404).json({ message: error.message });
+    }
+    if (error.message.includes('Cannot stop recurrence')) {
+      return res.status(400).json({ message: error.message });
+    }
+    res.status(500).json({ 
+      message: "Error while stopping recurrence", 
+      error: error.message 
+    });
+  }
+};
+
+/**
+ * Get all recurring task templates for a user
+ */
+export const getRecurringTasks = async (req, res) => {
+  const userID = req.params.id;
+
+  try {
+    const recurringTasks = await TaskModel.find({
+      user_id: userID,
+      'recurrence.enabled': true,
+      isRecurringInstance: false, // Only templates, not instances
+    });
+
+    res.status(200).json({ 
+      message: "Recurring tasks fetched successfully", 
+      tasks: recurringTasks 
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ 
+      message: "Error while fetching recurring tasks", 
+      error: error.message 
+    });
+  }
+};
+
+/**
+ * Check and generate recurring tasks on-demand
+ */
+export const checkAndGenerateRecurringTasks = async (req, res) => {
+  const { userID } = req.body;
+
+  try {
+    const generatedCount = await checkAndGenerateService(userID);
+    res.status(200).json({ 
+      message: "Recurring tasks checked and generated", 
+      generatedCount 
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ 
+      message: "Error while checking recurring tasks", 
+      error: error.message 
+    });
   }
 };
