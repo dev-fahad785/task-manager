@@ -1,3 +1,4 @@
+import './cleanup.js';
 import dotenv from 'dotenv';
 
 dotenv.config();
